@@ -1,2 +1,10 @@
 Flask
 Flask-SocketIO
+joblib
+numpy
+pandas
+scikit-learn
+shap
+python-whois
+textblob
+gunicorn
