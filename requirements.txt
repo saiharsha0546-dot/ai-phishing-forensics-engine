@@ -9,4 +9,5 @@ numba>=0.59.0
 shap>=0.45.0
 python-whois
 textblob
+beautifulsoup4
 gunicorn
