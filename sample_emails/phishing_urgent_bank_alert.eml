@@ -1,0 +1,38 @@
+Delivered-To: victim@company.com
+Received: by 2002:a05:6a10:123:b0:123:456:789 with SMTP id x1csp123456;
+        Thu, 16 Jul 2026 09:12:04 -0700 (PDT)
+Received: from mail-server.billing-verification-department.xyz ([185.220.101.42])
+        by mx.google.com with ESMTP id z99si1029384xyz.1.2026.07.16.09.12.03
+        for <victim@company.com>;
+        Thu, 16 Jul 2026 09:12:04 -0700 (PDT)
+Received-SPF: fail (google.com: domain of support@chase-bank-secure.work does not designate 185.220.101.42 as permitted sender) client-ip=185.220.101.42;
+Authentication-Results: mx.google.com;
+       dkim=fail header.i=@chase-bank-secure.work header.s=s1 header.b=X9Ja2kL1;
+       spf=fail (google.com: domain of support@chase-bank-secure.work does not designate 185.220.101.42 as permitted sender) smtp.mailfrom=support@chase-bank-secure.work
+From: "Chase Bank Security" <security-alert@chase.com>
+Return-Path: <support@chase-bank-secure.work>
+To: victim@company.com
+Subject: URGENT: Your Online Banking Account Has Been Suspended - Action Required Immediately
+Date: Thu, 16 Jul 2026 16:11:58 +0000
+Message-ID: <20260716161158.8492.chase@billing-verification-department.xyz>
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"
+
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; color: #333;">
+    <div style="background-color: #ff0000; color: white; padding: 15px; font-weight: bold;">
+        SECURITY WARNING: UNAUTHORIZED SIGN-IN ATTEMPT DETECTED
+    </div>
+    <p>Dear Valued Customer,</p>
+    <p>We detected an unauthorized wire transfer request originating from IP address <b>193.106.31.88</b> (Moscow, RU) for the amount of <b>$4,850.00 USD</b>.</p>
+    <p>Your online access has been temporarily <b>suspended</b> to prevent further unauthorized transactions. You must verify your identity immediately within <b>24 hours</b> or your account will be permanently terminated and reported to credit bureaus.</p>
+    <p>Please click the secure verification portal link below immediately to cancel the transfer and restore your access:</p>
+    <p style="text-align: center; margin: 30px 0;">
+        <a href="http://secure-login.paypal-billing-update.xyz/login.php?session=991823&token=chase_auth" style="background-color: #004488; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px;">VERIFY IDENTITY NOW</a>
+    </p>
+    <p>If the link above does not work, copy and paste the following URL into your browser:</p>
+    <p><small>http://185.220.101.42/portal/signin.aspx?session=8492</small></p>
+    <p>Sincerely,<br><b>Chase Bank Security & Fraud Prevention Department</b></p>
+</body>
+</html>

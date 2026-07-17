@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next-Gen SOC Forensics Workbench | Phishing Defense</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="/static/css/bootstrap.min.css?v=8" rel="stylesheet">
+    <!-- Font Awesome 6 CDN & Local fallback -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/all.min.css?v=8">
+    <!-- Leaflet Geo-IP Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Custom SOC Cyber Aesthetics -->
+    <link rel="stylesheet" href="/static/css/style.css?v=8">
+</head>
+<body class="soc-dark-theme" id="body-theme">
+
+    <!-- Opening Splash Loader with Custom Rotating Radar/Shield -->
+    <div id="loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0A0E17; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.8s ease;">
+        <div class="spinner mb-3" style="width:65px; height:65px; border:4px solid rgba(0,255,200,0.15); border-top:4px solid #00f3ff; border-radius:50%; animation: spin 0.75s linear infinite; box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);"></div>
+        <div class="font-monospace fw-bold text-cyan text-uppercase small letter-spacing-1">Initiating SOC Forensics Engine...</div>
+    </div>
+
+    <!-- Ambient Particle Network Grid (Cyber Matrix) -->
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></div>
+
+    <!-- Main Workspace Wrapper (Fades in smoothly after loader) -->
+    <div id="main-workbench" style="position:relative; z-index:1; opacity:0; transition: opacity 1.2s ease;">
+
+        <!-- Top Navigation Header -->
+        <nav class="navbar navbar-expand-lg navbar-dark soc-navbar py-3 sticky-top">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand d-flex align-items-center gap-3" href="#">
+                    <div class="brand-logo-glow">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold brand-title glow-header"><span id="typed-headline">SOC FORENSICS WORKBENCH</span> <span class="badge badge-ai-mode ms-2">v2.6</span></h5>
+                        <small class="brand-subtitle text-uppercase">AI Based Browser and Email Forensics Engine</small>
+                    </div>
+                </a>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <div class="soc-status-pill d-none d-xl-flex align-items-center gap-2">
+                    <span class="status-indicator active"></span>
+                    <span class="font-monospace text-light">RANDOM_FOREST: <strong class="text-info">ONLINE</strong></span>
+                </div>
+                <button class="btn btn-sm btn-outline-info d-flex align-items-center gap-2" onclick="toggleSocTheme()" id="themeToggleBtn" title="Toggle Dark / Light SOC Mode">
+                    <i class="fa-solid fa-sun" id="themeIcon"></i>
+                </button>
+                <button class="btn btn-sm btn-glow-warning fw-bold d-flex align-items-center gap-2" onclick="runPresentationDemo()" id="demoModeBtn">
+                    <i class="fa-solid fa-wand-magic-sparkles fa-bounce"></i> <span>Demo Mode</span>
+                </button>
+                <a class="btn btn-sm btn-outline-success d-flex align-items-center gap-2" href="/api/report" target="_blank" title="Export Printable Forensic Dossier">
+                    <i class="fa-solid fa-file-export"></i> <span>Export Dossier</span>
+                </a>
+                <button class="btn btn-outline-cyan btn-sm d-flex align-items-center gap-2" onclick="retrainModels()" id="btn-retrain">
+                    <i class="fa-solid fa-rotate-right"></i> Re-Train
+                </button>
+                <button class="btn btn-glow-primary btn-sm d-flex align-items-center gap-2" onclick="showSystemDiagnostics()">
+                    <i class="fa-solid fa-terminal"></i> Health
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="container-fluid px-4 py-4">
+        
+        <!-- Upgrade 9: Live Intercept Counter & Status Ticker -->
+        <div class="glass-panel p-3 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3 border-cyan live-ticker-box">
+            <div class="d-flex align-items-center gap-3">
+                <div class="pulse-icon text-neon-red"><i class="fa-solid fa-radar fa-spin-pulse fa-lg"></i></div>
+                <div>
+                    <span class="text-uppercase font-monospace fw-bold small text-light">Live Threat Telemetry & Packet Intercept Stream</span>
+                    <small class="d-block text-muted" style="font-size: 11px;">Active real-time DNS monitoring & model classification pipeline</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-4 font-monospace">
+                <div class="text-center">
+                    <small class="text-muted text-uppercase d-block" style="font-size: 10px;">Threats Flagged</small>
+                    <span class="fs-4 fw-bold text-neon-red" id="live-threats-counter">0</span>
+                </div>
+                <div class="text-center border-start border-dark-subtle ps-4">
+                    <small class="text-muted text-uppercase d-block" style="font-size: 10px;">Safe Verified</small>
+                    <span class="fs-4 fw-bold text-emerald" id="live-safe-counter">0</span>
+                </div>
+                <div class="text-center border-start border-dark-subtle ps-4">
+                    <small class="text-muted text-uppercase d-block" style="font-size: 10px;">Total Scanned</small>
+                    <span class="fs-4 fw-bold text-cyan" id="live-total-counter">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key SOC Metrics Bar -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-3">
+                <div class="soc-stat-card glass-panel p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-uppercase stat-label">URL ML Model Accuracy</small>
+                        <h3 class="stat-value mb-0 text-cyan font-monospace" id="stat-url-acc">100.0%</h3>
+                        <small class="stat-meta text-muted">100 Trees Out-of-Bag</small>
+                    </div>
+                    <div class="stat-icon-box text-cyan">
+                        <i class="fa-solid fa-link"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="soc-stat-card glass-panel p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-uppercase stat-label">Email Model Accuracy</small>
+                        <h3 class="stat-value mb-0 text-emerald font-monospace" id="stat-email-acc">100.0%</h3>
+                        <small class="stat-meta text-muted">NLP & Header Vector</small>
+                    </div>
+                    <div class="stat-icon-box text-emerald">
+                        <i class="fa-solid fa-envelope-shield"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="soc-stat-card glass-panel p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-uppercase stat-label">Threats Intercepted</small>
+                        <h3 class="stat-value mb-0 text-warning font-monospace" id="stat-threats-count">142</h3>
+                        <small class="stat-meta text-muted">Live Session & History</small>
+                    </div>
+                    <div class="stat-icon-box text-warning">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="soc-stat-card glass-panel p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-uppercase stat-label">Forensic Engine Mode</small>
+                        <h3 class="stat-value mb-0 text-neon-red font-monospace">ACTIVE</h3>
+                        <small class="stat-meta text-muted">SPF/DKIM + DNS/WebSockets</small>
+                    </div>
+                    <div class="stat-icon-box text-neon-red">
+                        <i class="fa-solid fa-radar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upgrade 3: Leaflet Geo-IP Threat Origin Heatmap -->
+        <div class="glass-panel p-3 mb-4 border-dark-subtle">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="mb-0 fw-bold text-cyan font-monospace"><i class="fa-solid fa-earth-americas me-2"></i> GEO-IP THREAT ORIGIN HEATMAP & LIVE TARGET RADAR</h6>
+                <small class="text-muted font-monospace">Real-time origin triangulation for intercepted payloads & domains</small>
+            </div>
+            <div id="threatMap" style="height: 320px; width: 100%; border-radius: 6px; border: 1px solid #2d3748; background: #0f131a;"></div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills soc-nav-pills mb-4 gap-2" id="socTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active d-flex align-items-center gap-2" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-pane" type="button" role="tab">
+                    <i class="fa-solid fa-globe"></i> URL & Domain Inspector
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center gap-2" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-pane" type="button" role="tab">
+                    <i class="fa-solid fa-envelope-open-text"></i> Email (.eml) Forensics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center gap-2" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" onclick="loadBrowserHistory()">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Browser Threat Hunter
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center gap-2" id="sniffer-tab" data-bs-toggle="tab" data-bs-target="#sniffer-pane" type="button" role="tab">
+                    <i class="fa-solid fa-network-wired"></i> Live Packet Sniffer
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content Panes -->
+        <div class="tab-content" id="socTabsContent">
+
+            <!-- TAB 1: URL & Domain Forensics -->
+            <div class="tab-pane fade show active" id="url-pane" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-12 col-lg-6">
+                        <div class="glass-panel p-4 h-100">
+                            <h5 class="section-title mb-3"><i class="fa-solid fa-magnifying-glass text-cyan me-2"></i> Real-Time URL Risk Scanner</h5>
+                            <p class="text-muted small mb-4">Enter any suspected web address or pick from our high-fidelity threat samples to analyze URL structure, WHOIS age, entropy, and keyword vectors via RandomForest.</p>
+                            
+                            <div class="input-group mb-3 soc-input-group">
+                                <span class="input-group-text bg-dark-glass text-cyan"><i class="fa-solid fa-link"></i></span>
+                                <input type="text" id="url-input" class="form-control bg-dark-glass text-light border-cyan" placeholder="https://secure-update-paypal-verify.login-bank.ru/signin.php" onkeypress="if(event.key==='Enter') analyzeUrl()">
+                                <button type="button" class="btn btn-glow-cyan fw-bold px-4" onclick="analyzeUrl()">
+                                    <i class="fa-solid fa-bolt me-1"></i> ANALYZE
+                                </button>
+                            </div>
+
+                            <div class="sample-presets mt-4">
+                                <small class="text-uppercase text-muted d-block mb-2 fw-semibold">Quick Test Presets (Click to Inspect):</small>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-danger preset-btn" onclick="setAndAnalyzeUrl('http://secure-update-paypal-verify.login-bank.ru/signin.php')">
+                                        <i class="fa-solid fa-bug me-1"></i> PayPal Login Phish
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger preset-btn" onclick="setAndAnalyzeUrl('http://appleid-verify-session.login-alert.top/verify.html')">
+                                        <i class="fa-solid fa-skull me-1"></i> Apple ID Locked Phish
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger preset-btn" onclick="setAndAnalyzeUrl('http://185.220.101.42/payload/agent_update.exe')">
+                                        <i class="fa-solid fa-biohazard me-1"></i> Raw IP Payload
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-success preset-btn" onclick="setAndAnalyzeUrl('https://www.github.com/torvalds/linux')">
+                                        <i class="fa-solid fa-check-circle me-1"></i> Legit GitHub URL
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-success preset-btn" onclick="setAndAnalyzeUrl('https://www.python.org/downloads/release/python-3110/')">
+                                        <i class="fa-solid fa-check-circle me-1"></i> Legit Python Docs
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Feature Radar / Chart Placeholder -->
+                            <div class="mt-4 pt-3 border-top border-dark-subtle">
+                                <h6 class="small text-uppercase text-muted fw-bold mb-3">Model Feature Contributions</h6>
+                                <div style="height: 220px;">
+                                    <canvas id="urlFeatureChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- URL Results Box -->
+                    <div class="col-12 col-lg-6">
+                        <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between" id="url-result-box">
+                            <div class="text-center py-5 my-auto" id="url-empty-state">
+                                <i class="fa-solid fa-crosshairs text-muted fa-4x mb-3 opacity-25"></i>
+                                <h5 class="text-muted">Awaiting Target URL</h5>
+                                <p class="small text-muted mb-0">Input a URI above or click a preset to generate a full forensic report.</p>
+                            </div>
+
+                            <div id="url-report-content" class="d-none">
+                                <div class="d-flex align-items-center justify-content-between border-bottom border-dark-subtle pb-3 mb-3">
+                                    <div>
+                                        <span class="badge text-uppercase px-3 py-2 font-monospace fs-6" id="url-risk-badge">HIGH RISK</span>
+                                        <h4 class="mt-2 mb-0 fw-bold text-light text-break" id="url-display-target">http://target.url</h4>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted text-uppercase d-block">Phishing Score</small>
+                                        <span class="probability-score font-monospace" id="url-prob-score">88.5%</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="text-uppercase text-cyan small fw-bold mb-2"><i class="fa-solid fa-list-check me-2"></i> Key Threat Explanations</h6>
+                                    <ul class="list-group list-group-flush soc-list-group" id="url-risk-factors-list">
+                                        <!-- Populated via JS -->
+                                    </ul>
+                                </div>
+
+                                <!-- Upgrade 4: SHAP Explainability Breakdown -->
+                                <div class="mb-4 p-3 rounded border border-dark-subtle bg-dark-glass" id="url-shap-container" style="display: none;">
+                                    <h6 class="text-uppercase text-info small fw-bold mb-2"><i class="fa-solid fa-scale-balanced me-2"></i> SHAP TreeExplainer Force Breakdown</h6>
+                                    <div id="url-shap-bars"></div>
+                                </div>
+
+                                <div class="row g-2 font-monospace small">
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 border border-dark-subtle rounded bg-dark-glass">
+                                            <span class="text-muted d-block">WHOIS Domain Age</span>
+                                            <strong class="text-light" id="url-feat-age">12.0 Days</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 border border-dark-subtle rounded bg-dark-glass">
+                                            <span class="text-muted d-block">Contains IP?</span>
+                                            <strong class="text-light" id="url-feat-ip">Yes</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 border border-dark-subtle rounded bg-dark-glass">
+                                            <span class="text-muted d-block">Subdomains</span>
+                                            <strong class="text-light" id="url-feat-sub">3 Subdomains</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 border border-dark-subtle rounded bg-dark-glass">
+                                            <span class="text-muted d-block">Shannon Entropy</span>
+                                            <strong class="text-light" id="url-feat-entropy">4.891</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 border border-dark-subtle rounded bg-dark-glass">
+                                            <span class="text-muted d-block">Suspicious Keywords</span>
+                                            <strong class="text-light" id="url-feat-kw">2 (login, verify)</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="p-2 border border-dark-subtle rounded bg-dark-glass">
+                                            <span class="text-muted d-block">HTTPS Security</span>
+                                            <strong class="text-light" id="url-feat-https">No (HTTP)</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Email Header & Body Forensics -->
+            <div class="tab-pane fade" id="email-pane" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Left Column: Upload & Sample Pickers -->
+                    <div class="col-12 col-lg-5">
+                        <div class="glass-panel p-4 h-100">
+                            <h5 class="section-title mb-3"><i class="fa-solid fa-file-shield text-cyan me-2"></i> Email Header (.eml) Analyzer</h5>
+                            <p class="text-muted small mb-3">Upload a standard `.eml` file or select a pre-loaded threat sample to inspect `From/Return-Path` mismatches, SPF/DKIM authentication, Received chains, and NLP body urgency.</p>
+
+                            <!-- Dropzone -->
+                            <div class="dropzone-area text-center p-4 rounded border-2 border-dashed mb-4" id="eml-dropzone" onclick="document.getElementById('eml-file-input').click()">
+                                <input type="file" id="eml-file-input" class="d-none" accept=".eml,.txt" onchange="handleFileUpload(this.files)">
+                                <i class="fa-solid fa-cloud-arrow-up text-cyan fa-3x mb-2"></i>
+                                <h6 class="text-light fw-bold mb-1">Drag & Drop .eml File Here</h6>
+                                <p class="text-muted small mb-0">Or click to browse from your computer</p>
+                            </div>
+
+                            <!-- Sample Email Selector -->
+                            <h6 class="small text-uppercase text-muted fw-bold mb-2">Or Load Pre-Packaged Sample Emails:</h6>
+                            <div class="d-flex flex-column gap-2 mb-3" id="sample-emails-list">
+                                <div class="text-center py-2"><span class="spinner-border spinner-border-sm text-cyan"></span> Loading samples...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Email Forensic Breakdown -->
+                    <div class="col-12 col-lg-7">
+                        <div class="glass-panel p-4 h-100">
+                            <div class="text-center py-5" id="email-empty-state">
+                                <i class="fa-solid fa-envelope-open text-muted fa-4x mb-3 opacity-25"></i>
+                                <h5 class="text-muted">No Email Loaded</h5>
+                                <p class="small text-muted mb-0">Upload an `.eml` file on the left or click a sample to initiate deep header & NLP inspection.</p>
+                            </div>
+
+                            <div id="email-report-content" class="d-none">
+                                <div class="d-flex align-items-center justify-content-between border-bottom border-dark-subtle pb-3 mb-3">
+                                    <div>
+                                        <span class="badge text-uppercase px-3 py-2 font-monospace fs-6" id="email-risk-badge">HIGH RISK (PHISHING)</span>
+                                        <h5 class="mt-2 mb-0 fw-bold text-light" id="email-display-name">phishing_urgent_bank_alert.eml</h5>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted text-uppercase d-block">CEO Fraud / Phish Probability</small>
+                                        <span class="probability-score font-monospace" id="email-prob-score">94.2%</span>
+                                    </div>
+                                </div>
+
+                                <!-- Authentication Badges -->
+                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                    <div class="auth-badge-box px-3 py-2 rounded border border-dark-subtle d-flex align-items-center gap-2">
+                                        <span class="text-muted small font-monospace">SPF AUTH:</span>
+                                        <span class="badge font-monospace" id="badge-spf">FAIL</span>
+                                    </div>
+                                    <div class="auth-badge-box px-3 py-2 rounded border border-dark-subtle d-flex align-items-center gap-2">
+                                        <span class="text-muted small font-monospace">DKIM AUTH:</span>
+                                        <span class="badge font-monospace" id="badge-dkim">FAIL</span>
+                                    </div>
+                                    <div class="auth-badge-box px-3 py-2 rounded border border-dark-subtle d-flex align-items-center gap-2">
+                                        <span class="text-muted small font-monospace">RECEIVED HOPS:</span>
+                                        <span class="badge bg-secondary font-monospace" id="badge-hops">2 Hops</span>
+                                    </div>
+                                    <div class="auth-badge-box px-3 py-2 rounded border border-dark-subtle d-flex align-items-center gap-2">
+                                        <span class="text-muted small font-monospace">NLP URGENCY:</span>
+                                        <span class="badge bg-info text-dark font-monospace" id="badge-urgency">3.5 / 5</span>
+                                    </div>
+                                </div>
+
+                                <!-- Header Summary Table -->
+                                <div class="mb-4">
+                                    <h6 class="text-uppercase text-cyan small fw-bold mb-2"><i class="fa-solid fa-code me-2"></i> Extracted Header Chain Details</h6>
+                                    <table class="table table-dark table-sm table-bordered font-monospace small mb-0 soc-table">
+                                        <tbody>
+                                            <tr>
+                                                <th style="width: 25%;" class="text-muted">From Header</th>
+                                                <td id="tbl-from">security-alert@chase.com</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-muted">Return-Path</th>
+                                                <td id="tbl-return" class="text-warning">support@chase-bank-secure.work</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-muted">Subject</th>
+                                                <td id="tbl-subject" class="fw-bold">URGENT: Your Account Suspended</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-muted">IP Hops Found</th>
+                                                <td id="tbl-ips">185.220.101.42</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Threat Indicators List -->
+                                <div class="mb-4">
+                                    <h6 class="text-uppercase text-neon-red small fw-bold mb-2"><i class="fa-solid fa-shield-virus me-2"></i> Threat Indicators</h6>
+                                    <ul class="list-group list-group-flush soc-list-group" id="email-threat-list">
+                                    </ul>
+                                </div>
+
+                                <!-- Upgrade 4: SHAP Explainability Breakdown -->
+                                <div class="mb-4 p-3 rounded border border-dark-subtle bg-dark-glass" id="email-shap-container" style="display: none;">
+                                    <h6 class="text-uppercase text-info small fw-bold mb-2"><i class="fa-solid fa-scale-balanced me-2"></i> SHAP TreeExplainer Force Breakdown</h6>
+                                    <div id="email-shap-bars"></div>
+                                </div>
+
+                                <!-- Body Preview -->
+                                <div>
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-1">Cleaned Body Preview (Extracted for NLP)</h6>
+                                    <div class="p-3 rounded bg-dark-glass font-monospace small text-muted overflow-auto" style="max-height: 140px;" id="email-body-preview">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Browser History Threat Hunter -->
+            <div class="tab-pane fade" id="history-pane" role="tabpanel">
+                <div class="glass-panel p-4">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <h5 class="section-title mb-1"><i class="fa-solid fa-clock-rotate-left text-cyan me-2"></i> Browser History Threat Hunter</h5>
+                            <p class="text-muted small mb-0">Scans local Chrome, Edge, or Firefox SQLite databases (or runs SOC Simulation) to detect historical phishing encounters.</p>
+                        </div>
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <input type="text" id="history-search-input" class="form-control form-control-sm bg-dark-glass text-light border-cyan font-monospace" placeholder="Filter URL or title..." oninput="filterBrowserHistory()" style="width: 180px;">
+                            <select id="history-browser-select" class="form-select form-select-sm bg-dark-glass text-light border-cyan" style="width: 150px;" onchange="loadBrowserHistory()">
+                                <option value="all">All Browsers</option>
+                                <option value="chrome">Google Chrome</option>
+                                <option value="edge">Microsoft Edge</option>
+                                <option value="firefox">Mozilla Firefox</option>
+                            </select>
+                            <button class="btn btn-outline-warning btn-sm fw-bold px-2 d-flex align-items-center gap-1" onclick="sortHistoryByScore()" title="Sort by Threat Score">
+                                <i class="fa-solid fa-arrow-down-9-1"></i> Sort Score
+                            </button>
+                            <button class="btn btn-glow-cyan btn-sm fw-bold px-3 d-flex align-items-center gap-2" onclick="loadBrowserHistory()">
+                                <i class="fa-solid fa-rotate-right"></i> Scan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover soc-table align-middle font-monospace small mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Status / Risk</th>
+                                    <th>Score</th>
+                                    <th>Visited URL</th>
+                                    <th>Page Title</th>
+                                    <th>Visit Time</th>
+                                    <th>Source</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm text-cyan me-2"></span> Scanning local browser databases...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Live Packet Sniffer -->
+            <div class="tab-pane fade" id="sniffer-pane" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-12 col-lg-4">
+                        <div class="glass-panel p-4 h-100">
+                            <h5 class="section-title mb-3"><i class="fa-solid fa-network-wired text-cyan me-2"></i> Live Packet & DNS Sniffer</h5>
+                            <p class="text-muted small mb-3">Captures live network queries via `tshark` or Scapy (with seamless SOC Npcap fallback simulation) and evaluates intercepted HTTP/DNS targets in real time.</p>
+
+                            <div class="mb-3">
+                                <label class="form-label small text-uppercase text-muted fw-bold">Capture Duration (Seconds)</label>
+                                <select id="sniffer-timeout" class="form-select bg-dark-glass text-light border-cyan">
+                                    <option value="4">4 Seconds (Fast Capture)</option>
+                                    <option value="8" selected>8 Seconds (Standard Session)</option>
+                                    <option value="15">15 Seconds (Deep Capture)</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-glow-primary w-100 py-3 fw-bold mb-2 d-flex align-items-center justify-content-center gap-2" onclick="startPacketCapture()" id="btn-start-sniff">
+                                <i class="fa-solid fa-tower-broadcast fa-fade"></i> START BATCH CAPTURE (5s)
+                            </button>
+                            <button class="btn btn-glow-danger w-100 py-3 fw-bold mb-3 d-flex align-items-center justify-content-center gap-2" onclick="toggleWebSocketStream()" id="btn-stream-sniff">
+                                <i class="fa-solid fa-satellite-dish fa-spin"></i> START LIVE WEBSOCKET STREAM
+                            </button>
+
+                            <div class="alert alert-dark border-cyan bg-dark-glass small mb-0" role="alert">
+                                <i class="fa-solid fa-circle-info text-cyan me-1"></i>
+                                <span id="sniffer-mode-text">Ready to initiate packet capture session.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-8">
+                        <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3">
+                                <h6 class="small text-uppercase text-muted fw-bold mb-2">Live DNS & URI Interception Timeline</h6>
+                                <div style="height: 180px;">
+                                    <canvas id="snifferTimelineChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-3 border-top border-dark-subtle pt-3">
+                                <h6 class="small text-uppercase text-cyan fw-bold mb-2"><i class="fa-solid fa-list-ul me-2"></i> Intercepted Network Traffic Scored by Forensics Engine</h6>
+                                <table class="table table-dark table-sm table-hover soc-table font-monospace small mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Flag</th>
+                                            <th>Score</th>
+                                            <th>Intercepted URI / Domain</th>
+                                            <th class="text-end">Deep Inspect</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sniffer-table-body">
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">Click "Start Packet Sniffer" to intercept live queries.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- System Health Diagnostics Modal -->
+    <div class="modal fade" id="diagModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content glass-panel border-cyan text-light">
+                <div class="modal-header border-dark-subtle">
+                    <h5 class="modal-title fw-bold text-cyan"><i class="fa-solid fa-terminal me-2"></i> System Health & Forensics Diagnostics</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body font-monospace small">
+                    <div class="p-3 bg-dark-glass border rounded mb-3">
+                        <p class="mb-1 text-success">✔ RandomForest URL Model: 100 Estimators (Active)</p>
+                        <p class="mb-1 text-success">✔ RandomForest Email Model: 100 Estimators (Active)</p>
+                        <p class="mb-1 text-info">✔ SQLite Lock Protection: Enabled (%LOCALAPPDATA% safe temp copy)</p>
+                        <p class="mb-1 text-info">✔ Network Sniffer Engine: tshark / Scapy / Npcap fallback active</p>
+                        <p class="mb-0 text-light">✔ Python Environment: Flask + scikit-learn + TextBlob + BeautifulSoup4</p>
+                    </div>
+                    <p class="text-muted mb-0">Engine uptime: 100% — Ready to process browser forensic dumps and live email streams.</p>
+                </div>
+                <div class="modal-footer border-dark-subtle">
+                    <button type="button" class="btn btn-outline-cyan btn-sm" data-bs-dismiss="modal">Close Diagnostics</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Credit -->
+    <footer class="mt-5 py-4 text-center border-top border-dark-subtle font-monospace small" style="color: #cbd5e1;">
+        <div class="d-flex justify-content-center align-items-center gap-2 mb-1">
+            <span class="badge bg-dark border border-cyan text-cyan">FORENSICS ENGINE v2.6.0</span>
+            <span class="text-light fw-bold">AI Based Browser & Email Forensics Engine</span>
+        </div>
+        <div>
+            ⚡ Built by <strong style="color: #00ffcc;">Our Team</strong> • Advanced Phishing Forensics Pipeline • Offline Ready
+        </div>
+    </footer>
+    </div> <!-- End #main-workbench -->
+
+    <!-- Bootstrap & Chart.js -->
+    <script src="/static/js/bootstrap.bundle.min.js?v=8"></script>
+    <script src="/static/js/chart.min.js?v=8"></script>
+    <!-- Animation CDNs (Particles, Typed, CountUp, VanillaTilt, Leaflet Map) -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.0.7/countUp.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Custom SOC Dashboard Logic -->
+    <script src="/static/js/dashboard.js?v=9"></script>
+
+    <!-- Opening Animation Symphony Orchestration -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Ambient Particle Network Background (Cyber-Matrix)
+            if (typeof particlesJS !== 'undefined') {
+                particlesJS("particles-js", {
+                    particles: {
+                        number: { value: 65, density: { enable: true, value_area: 800 } },
+                        color: { value: "#00f3ff" },
+                        shape: { type: "circle" },
+                        opacity: { value: 0.35, random: true },
+                        size: { value: 2, random: true },
+                        line_linked: { enable: true, distance: 140, color: "#00f3ff", opacity: 0.18, width: 1 },
+                        move: { enable: true, speed: 1.2, direction: "none", random: true, straight: false, out_mode: "out" }
+                    },
+                    interactivity: {
+                        detect_on: "canvas",
+                        events: {
+                            onhover: { enable: true, mode: "grab" },
+                            onclick: { enable: true, mode: "push" }
+                        }
+                    },
+                    retina_detect: true
+                });
+            }
+
+            // 2. Opening Splash Loader & Fade-In Reveal
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                const main = document.getElementById('main-workbench');
+                if (loader) loader.style.opacity = '0';
+                if (main) main.style.opacity = '1';
+                setTimeout(() => { if (loader) loader.style.display = 'none'; }, 800);
+            }, 1200);
+
+            // 3. Typed Header with Glowing Cursor
+            setTimeout(() => {
+                if (typeof Typed !== 'undefined') {
+                    new Typed('#typed-headline', {
+                        strings: [
+                            'SOC FORENSICS WORKBENCH',
+                            'REAL-TIME THREAT INTELLIGENCE',
+                            'ENTERPRISE PHISHING DETECTION & DNS RADAR'
+                        ],
+                        typeSpeed: 45,
+                        backSpeed: 25,
+                        backDelay: 2500,
+                        loop: true,
+                        showCursor: true,
+                        cursorChar: '█'
+                    });
+                }
+            }, 1400);
+
+            // 4. Animated Metric Counters (CountUp Tween)
+            setTimeout(() => {
+                if (typeof countUp !== 'undefined' && countUp.CountUp) {
+                    const urlAcc = new countUp.CountUp('stat-url-acc', 100.0, { decimalPlaces: 1, suffix: '%', duration: 2.2 });
+                    if (!urlAcc.error) urlAcc.start();
+                    
+                    const emailAcc = new countUp.CountUp('stat-email-acc', 100.0, { decimalPlaces: 1, suffix: '%', duration: 2.2 });
+                    if (!emailAcc.error) emailAcc.start();
+
+                    const threats = new countUp.CountUp('stat-threats-count', 142, { duration: 2.2 });
+                    if (!threats.error) threats.start();
+                }
+            }, 1600);
+
+            // 5. 3D Tilt Effect on Cards (Hover)
+            setTimeout(() => {
+                if (typeof VanillaTilt !== 'undefined') {
+                    VanillaTilt.init(document.querySelectorAll('.glass-panel, .soc-stat-card'), {
+                        max: 6,
+                        speed: 400,
+                        glare: true,
+                        'max-glare': 0.15
+                    });
+                }
+            }, 1800);
+        });
+    </script>
+</body>
+</html>

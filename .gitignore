@@ -1,0 +1,19 @@
+# Python virtual environment & cache
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# IDE & Agent artifacts
+.vscode/
+.idea/
+.gemini/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db

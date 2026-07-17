@@ -1,0 +1,505 @@
+/* Next-Gen SOC Cyber Forensics Dark Theme (Prompt A - Dark Cyber SOC & Clean Minimalist Forensic Lab) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700&display=swap');
+
+:root {
+    --soc-bg: #0A0E17;
+    --soc-card-bg: rgba(12, 20, 35, 0.75);
+    --soc-card-border: rgba(0, 255, 200, 0.15);
+    --cyan-glow: #00f3ff;
+    --emerald-glow: #00ff66;
+    --amber-glow: #ff9d00;
+    --neon-red: #ff0055;
+    --dark-glass: rgba(8, 12, 22, 0.8);
+}
+
+body.soc-dark-theme, body {
+    background-color: var(--soc-bg);
+    color: #E0E8F0;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+}
+
+/* Subtle Grid Overlay for "SOC Command Center Wall" vibe */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 255, 200, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 200, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Navbar - Sticky & Sleek */
+.navbar, .soc-navbar {
+    background: rgba(10, 14, 23, 0.85) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 255, 200, 0.2);
+    padding: 12px 24px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+}
+.navbar-brand, .brand-title {
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #00ffcc, #00aaff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.brand-logo-glow {
+    font-size: 1.8rem;
+    color: var(--cyan-glow);
+    filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.6));
+}
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+.badge-ai-mode {
+    background: linear-gradient(135deg, #00f3ff 0%, #0066ff 100%);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.68rem;
+}
+
+/* Glassmorphism Cards - Enhanced */
+.glass, .glass-panel {
+    background: rgba(12, 20, 35, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 255, 200, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+.glass:hover, .glass-panel:hover {
+    border-color: rgba(0, 255, 200, 0.3);
+    box-shadow: 0 12px 48px rgba(0, 200, 255, 0.1);
+}
+.bg-dark-glass {
+    background: var(--dark-glass) !important;
+}
+
+/* Stat Cards */
+.soc-stat-card {
+    position: relative;
+    overflow: hidden;
+}
+.stat-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+.stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+.stat-meta {
+    font-size: 0.72rem;
+}
+.stat-icon-box {
+    font-size: 2.2rem;
+    opacity: 0.85;
+}
+.text-cyan { color: var(--cyan-glow) !important; }
+.text-emerald { color: var(--emerald-glow) !important; }
+.text-neon-red { color: var(--neon-red) !important; }
+.border-cyan { border-color: rgba(0, 243, 255, 0.4) !important; }
+
+/* Status Pill & Live Sniffer Animation */
+.soc-status-pill {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+}
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--emerald-glow);
+    box-shadow: 0 0 8px var(--emerald-glow);
+    animation: pulse 2s infinite;
+}
+.sniffing-active::after {
+    content: ' ●';
+    color: #00ff66;
+    animation: blink 0.8s infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 14px var(--emerald-glow); }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* Risk Badges - Animated Pulse */
+.risk-critical {
+    color: #ff0055;
+    border-left: 4px solid #ff0055;
+    padding-left: 12px;
+    animation: pulse-critical 1.5s infinite;
+}
+.risk-suspicious {
+    color: #ff9d00;
+    border-left: 4px solid #ff9d00;
+    padding-left: 12px;
+}
+.risk-safe {
+    color: #00ff66;
+    border-left: 4px solid #00ff66;
+    padding-left: 12px;
+}
+@keyframes pulse-critical {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; text-shadow: 0 0 8px #ff0055; }
+    100% { opacity: 1; }
+}
+
+/* Buttons - Neon Glow */
+.btn-primary, .btn-glow-cyan {
+    background: linear-gradient(135deg, #00d4ff, #0088cc);
+    border: none;
+    color: #0A0E17 !important;
+    font-weight: 700;
+    padding: 10px 24px;
+    border-radius: 30px;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+.btn-primary:hover, .btn-glow-cyan:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    color: #000 !important;
+}
+.btn-glow-primary {
+    background: linear-gradient(135deg, #ff0055 0%, #aa00ff 100%);
+    color: #fff !important;
+    border: none;
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+    transition: all 0.2s ease;
+}
+.btn-glow-primary:hover {
+    background: linear-gradient(135deg, #ff3377 0%, #bb22ff 100%);
+    color: #fff !important;
+    box-shadow: 0 0 25px rgba(255, 0, 85, 0.7);
+    transform: translateY(-1px);
+}
+.btn-outline-cyan {
+    border: 1px solid var(--cyan-glow);
+    color: var(--cyan-glow);
+    background: transparent;
+}
+.btn-outline-cyan:hover {
+    background: var(--cyan-glow);
+    color: #080c16;
+}
+
+/* Nav Pills */
+.soc-nav-pills .nav-link {
+    color: #94a3b8;
+    background: rgba(18, 26, 43, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 10px 18px;
+    transition: all 0.25s ease;
+}
+.soc-nav-pills .nav-link:hover {
+    color: #fff;
+    border-color: rgba(0, 243, 255, 0.3);
+}
+.soc-nav-pills .nav-link.active {
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.2) 0%, rgba(0, 102, 255, 0.2) 100%);
+    border-color: var(--cyan-glow);
+    color: var(--cyan-glow);
+    box-shadow: 0 0 18px rgba(0, 243, 255, 0.2);
+}
+
+/* Section Title */
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Input & Form */
+.soc-input-group .form-control:focus {
+    background: var(--dark-glass);
+    color: #fff;
+    border-color: var(--cyan-glow);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+}
+
+/* Preset & Dropzone */
+.preset-btn {
+    font-size: 0.75rem;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+.dropzone-area {
+    border-color: rgba(0, 243, 255, 0.3) !important;
+    background: rgba(0, 243, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.dropzone-area:hover {
+    border-color: var(--cyan-glow) !important;
+    background: rgba(0, 243, 255, 0.08);
+}
+
+/* Tables - Clean, Monospace, Striped */
+.table-dark, .soc-table {
+    background: transparent;
+    color: #c0c8d4;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+}
+.table-dark th, .soc-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: #00f3ff !important;
+    border-bottom: 1px solid rgba(0, 255, 200, 0.2);
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+.table-dark td, .soc-table td {
+    background: rgba(16, 24, 40, 0.4);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.9rem;
+    color: #f8fafc !important;
+    vertical-align: middle;
+}
+.soc-table td.text-muted, .soc-table td .text-muted, .text-muted {
+    color: #cbd5e1 !important;
+}
+.soc-list-group .list-group-item {
+    background: transparent;
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.12);
+    font-size: 0.9rem;
+    padding: 10px 0;
+}
+
+/* Probability Display */
+.probability-score {
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+    .glass, .glass-panel { padding: 16px; }
+    .navbar-brand, .brand-title { font-size: 1.2rem; }
+}
+
+/* =========================================================
+   UPGRADES 1-10 + BONUS + PRESENTATION MODE STYLES
+   ========================================================= */
+
+/* Upgrade 5: Clean Minimalist Light Mode Overrides */
+body.soc-light-theme {
+    --soc-bg: #f4f7f9;
+    --soc-card-bg: rgba(255, 255, 255, 0.9);
+    --soc-card-border: rgba(0, 100, 200, 0.2);
+    --cyan-glow: #0066cc;
+    --emerald-glow: #10b981;
+    --amber-glow: #d97706;
+    --neon-red: #e11d48;
+    --dark-glass: rgba(240, 244, 248, 0.95);
+    background-color: var(--soc-bg) !important;
+    color: #1e293b !important;
+}
+body.soc-light-theme::before {
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+body.soc-light-theme .navbar, body.soc-light-theme .soc-navbar {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+body.soc-light-theme .glass, body.soc-light-theme .glass-panel {
+    background: var(--soc-card-bg);
+    border-color: var(--soc-card-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    color: #1e293b;
+}
+body.soc-light-theme .form-control, body.soc-light-theme .form-select, body.soc-light-theme .bg-dark-glass {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+body.soc-light-theme .table-dark, body.soc-light-theme .soc-table td {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-color: #e2e8f0;
+}
+body.soc-light-theme .soc-table th {
+    color: #0284c7 !important;
+}
+body.soc-light-theme .text-light, body.soc-light-theme .stat-value {
+    color: #0f172a !important;
+}
+
+/* Upgrade 4: SHAP Force Breakdown Bars */
+.shap-bar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+}
+.shap-bar-track {
+    flex: 1;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    margin: 0 12px;
+    overflow: hidden;
+    position: relative;
+}
+.shap-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.shap-fill-positive {
+    background: linear-gradient(90deg, #ff0055, #ff5588);
+    box-shadow: 0 0 8px rgba(255, 0, 85, 0.5);
+}
+.shap-fill-negative {
+    background: linear-gradient(90deg, #00ff88, #00ccff);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+/* Upgrade 3: Leaflet Pulsing Threat Map Markers */
+.leaflet-pulse-marker, .leaflet-pulse-danger, .leaflet-pulse-safe, .leaflet-pulse-warn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    position: relative;
+    display: block;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+}
+.leaflet-pulse-danger {
+    background: #ff0055;
+    box-shadow: 0 0 16px #ff0055, 0 0 30px rgba(255, 0, 85, 0.7);
+    animation: pulseDanger 1.4s infinite;
+}
+.leaflet-pulse-safe {
+    background: #00ff88;
+    box-shadow: 0 0 16px #00ff88, 0 0 30px rgba(0, 255, 136, 0.7);
+    animation: pulseSafe 1.8s infinite;
+}
+.leaflet-pulse-warn {
+    background: #ffaa00;
+    box-shadow: 0 0 16px #ffaa00, 0 0 30px rgba(255, 170, 0, 0.7);
+    animation: pulseWarn 1.6s infinite;
+}
+@keyframes pulseDanger {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.8); }
+    70% { transform: scale(1.65); box-shadow: 0 0 0 15px rgba(255, 0, 85, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
+}
+@keyframes pulseWarn {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 170, 0, 0.8); }
+    70% { transform: scale(1.5); box-shadow: 0 0 0 14px rgba(255, 170, 0, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 170, 0, 0); }
+}
+@keyframes pulseSafe {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.8); }
+    70% { transform: scale(1.45); box-shadow: 0 0 0 12px rgba(0, 255, 136, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+}
+
+/* Upgrade 9: Live Ticker Box & Animations */
+.live-ticker-box {
+    animation: fadeInSlide 0.5s ease-out;
+}
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Upgrade 11: Demo Mode Glow */
+.demo-active-glow {
+    border-color: #ffaa00 !important;
+    box-shadow: 0 0 25px rgba(255, 170, 0, 0.4) !important;
+}
+
+/* =========================================================
+   OPENING ANIMATION SYMPHONY & LANDING PERFORMANCE HINTS
+   ========================================================= */
+
+/* Full-page and card hardware acceleration hints */
+.glass-panel, .soc-stat-card, .glow-header, .spinner, #main-workbench {
+    will-change: transform, opacity;
+}
+
+/* Full-page gentle reveal */
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Staggered Card Entrance Animation */
+.glass-panel, .soc-stat-card {
+    opacity: 0;
+    transform: translateY(35px);
+    animation: slideUp 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.soc-stat-card:nth-of-type(1), .row.g-3 > div:nth-child(1) .soc-stat-card { animation-delay: 0.15s; }
+.soc-stat-card:nth-of-type(2), .row.g-3 > div:nth-child(2) .soc-stat-card { animation-delay: 0.25s; }
+.soc-stat-card:nth-of-type(3), .row.g-3 > div:nth-child(3) .soc-stat-card { animation-delay: 0.35s; }
+.soc-stat-card:nth-of-type(4), .row.g-3 > div:nth-child(4) .soc-stat-card { animation-delay: 0.45s; }
+
+.live-ticker-box { animation-delay: 0.1s !important; }
+.tab-content .glass-panel { animation-delay: 0.35s !important; }
+
+@keyframes slideUp {
+    0% { opacity: 0; transform: translateY(35px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Glowing Header & Logo Pulse */
+.glow-header {
+    animation: glowPulse 3.5s ease-in-out infinite;
+}
+@keyframes glowPulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(0, 243, 255, 0.25); }
+    50% { text-shadow: 0 0 22px rgba(0, 243, 255, 0.85), 0 0 45px rgba(0, 243, 255, 0.4); }
+}
+
+/* Radar Spinner for Opening Loader */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

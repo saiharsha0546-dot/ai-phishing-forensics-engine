@@ -1,0 +1,33 @@
+Delivered-To: victim@company.com
+Received: by 2002:a05:6a10:123:b0:123:456:789 with SMTP id x1csp987654;
+        Thu, 16 Jul 2026 11:30:10 -0700 (PDT)
+Received: from mail.apple-support-unlock-id.top ([192.168.1.105])
+        by mx.google.com with ESMTP id p1si4829103xyz.3.2026.07.16.11.30.09
+        for <victim@company.com>;
+        Thu, 16 Jul 2026 11:30:10 -0700 (PDT)
+Received-SPF: fail (google.com: domain of unlock@apple-id-recovery.gq does not designate 192.168.1.105 as permitted sender) client-ip=192.168.1.105;
+Authentication-Results: mx.google.com;
+       dkim=fail header.i=@apple-id-recovery.gq header.s=main;
+       spf=fail (google.com: domain of unlock@apple-id-recovery.gq does not designate 192.168.1.105 as permitted sender) smtp.mailfrom=unlock@apple-id-recovery.gq
+From: "Apple ID Support" <no-reply@apple.com>
+Return-Path: <unlock@apple-id-recovery.gq>
+To: victim@company.com
+Subject: Notice: Your Apple ID Account Has Been Locked For Security Reasons
+Date: Thu, 16 Jul 2026 18:29:55 +0000
+Message-ID: <20260716182955.3341.apple@apple-id-recovery.gq>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+Dear Apple ID User,
+
+Your Apple ID has been locked for security reasons due to multiple failed login attempts from an unknown device in Shenzhen, China.
+
+To prevent unauthorized purchases and account termination, you must unlock and verify your Apple ID credentials immediately.
+
+Click here to restore your account:
+http://appleid-verify-session.login-alert.top/verify.html?user=target&session=locked
+
+Failure to verify within 12 hours will result in permanent deletion of your iCloud backups and connected devices.
+
+Apple ID Support Team
+Copyright (C) 2026 Apple Inc. All rights reserved.
