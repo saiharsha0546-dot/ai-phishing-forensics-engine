@@ -38,18 +38,27 @@ sniff_stop_event = None
 def load_or_train_models():
     """Ensure models are trained and loaded into memory on startup along with SHAP Explainers."""
     global url_model, email_model, url_explainer, email_explainer
-    if not os.path.exists(URL_MODEL_PATH) or not os.path.exists(EMAIL_MODEL_PATH):
-        print("Models not found. Initializing training pipeline right now...")
-        train_model.train_all_models()
-    
-    url_model = joblib.load(URL_MODEL_PATH)
-    email_model = joblib.load(EMAIL_MODEL_PATH)
-    print("Forensics Models successfully loaded into memory.")
+    try:
+        if os.path.exists(URL_MODEL_PATH) and os.path.exists(EMAIL_MODEL_PATH):
+            url_model = joblib.load(URL_MODEL_PATH)
+            email_model = joblib.load(EMAIL_MODEL_PATH)
+            print("Forensics Models successfully loaded into memory from disk.")
+        else:
+            print("Models not found on disk. Initializing training pipeline right now...")
+            res = train_model.train_all_models()
+            url_model = res.get('url_model') or joblib.load(URL_MODEL_PATH)
+            email_model = res.get('email_model') or joblib.load(EMAIL_MODEL_PATH)
+    except Exception as e:
+        print(f"Loading models from disk note ({e}). Initializing in-memory fallback training...")
+        res = train_model.train_all_models()
+        url_model = res.get('url_model')
+        email_model = res.get('email_model')
     
     try:
-        url_explainer = shap.TreeExplainer(url_model)
-        email_explainer = shap.TreeExplainer(email_model)
-        print("SHAP Explainability TreeExplainers initialized.")
+        if url_model and email_model:
+            url_explainer = shap.TreeExplainer(url_model)
+            email_explainer = shap.TreeExplainer(email_model)
+            print("SHAP Explainability TreeExplainers initialized.")
     except Exception as e:
         print(f"SHAP explainer init note: {e}")
 
@@ -399,6 +408,67 @@ def run_sniffer():
         })
     except Exception as e:
         return jsonify({'error': f'Packet capture failed: {str(e)}'}), 500
+
+@app.route('/api/extension/report', methods=['POST', 'OPTIONS'])
+def extension_report():
+    if request.method == 'OPTIONS':
+        # Respond to preflight requests (though extensions usually bypass CORS)
+        response = jsonify({})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST")
+        return response
+        
+    data = request.get_json() or {}
+    url = data.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'No URL provided'}), 400
+
+    try:
+        vec, feat_dict = extract_url_features(url, timeout=0.05, skip_whois=True)
+        X = np.array([vec])
+        proba = float(url_model.predict_proba(X)[0][1])
+        
+        if proba >= 0.7:
+            badge = "Threat Flagged"
+            badge_class = "danger"
+            risk_level = "High Risk (Phishing)"
+        elif proba >= 0.35:
+            badge = "Anomaly"
+            badge_class = "warning"
+            risk_level = "Suspicious"
+        else:
+            badge = "Normal Traffic"
+            badge_class = "success"
+            risk_level = "Safe"
+
+        geo = get_geo_metadata(url, round(proba * 100, 1))
+        
+        # Emit to Socket.IO for the live telemetry stream
+        socketio.emit('packet_event', {
+            'uri': url,
+            'probability': round(proba * 100, 1),
+            'badge': badge,
+            'badge_class': badge_class,
+            'features': feat_dict,
+            'geo': geo,
+            'mode': 'chrome-extension'
+        })
+        
+        response = jsonify({
+            'url': url,
+            'probability': round(proba * 100, 1),
+            'risk_level': risk_level,
+            'badge_class': badge_class,
+            'badge': badge,
+            'features': feat_dict,
+            'geo': geo,
+            'mode': 'chrome-extension'
+        })
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
+    except Exception as e:
+        return jsonify({'error': f'Extension URL analysis failed: {str(e)}'}), 500
 
 @app.route('/api/samples', methods=['GET'])
 def get_samples():

@@ -546,54 +546,110 @@ function initSocketIO() {
     });
 
     socket.on('packet_event', (pkt) => {
-        // Handle incoming live stream packet
-        const tbody = document.getElementById('sniffer-table-body');
-        if (tbody) {
-            // Remove placeholder if present
-            if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
-            
-            const tr = document.createElement('tr');
-            tr.className = 'live-ticker-box';
-            tr.innerHTML = `
-                <td><span class="badge bg-${pkt.badge_class} font-monospace">${pkt.badge}</span></td>
-                <td class="text-${pkt.badge_class} fw-bold font-monospace">${pkt.probability}%</td>
-                <td class="text-truncate text-light fw-medium" style="max-width: 320px;" title="${pkt.uri}">${pkt.uri}</td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-cyan py-0 px-2" onclick="inspectFromHistory('${pkt.uri.replace(/'/g, "\\'")}')">Analyze</button>
-                </td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-            if (tbody.children.length > 30) tbody.removeChild(tbody.lastChild);
-        }
-
-        // Add to map if geo available
-        if (pkt.geo) {
-            addGeoMarker(pkt.geo, pkt.uri, pkt.probability);
-        }
-
-        // Increment Live Ticker Counters
-        updateLiveCounters(pkt.probability >= 35);
+        handleLiveTelemetry(pkt);
     });
 }
 
+// Window Message Listener for Serverless Extension Bridge
+window.addEventListener('message', (event) => {
+    // We only accept messages from our extension
+    if (event.data && event.data.source === 'soc-extension' && event.data.payload) {
+        handleLiveTelemetry(event.data.payload);
+    }
+});
+
+function handleLiveTelemetry(pkt) {
+    // Handle incoming live stream packet
+    const tbody = document.getElementById('sniffer-table-body');
+    if (tbody) {
+        // Remove placeholder if present
+        if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+        
+        const tr = document.createElement('tr');
+        tr.className = 'live-ticker-box';
+        tr.innerHTML = `
+            <td><span class="badge bg-${pkt.badge_class} font-monospace">${pkt.badge}</span></td>
+            <td class="text-${pkt.badge_class} fw-bold font-monospace">${pkt.probability}%</td>
+            <td class="text-truncate text-light fw-medium" style="max-width: 320px;" title="${pkt.uri}">${pkt.uri}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-cyan py-0 px-2" onclick="inspectFromHistory('${pkt.uri.replace(/'/g, "\\'")}')">Analyze</button>
+            </td>
+        `;
+        tbody.insertBefore(tr, tbody.firstChild);
+        if (tbody.children.length > 30) tbody.removeChild(tbody.lastChild);
+    }
+
+    // Add to map if geo available
+    if (pkt.geo) {
+        addGeoMarker(pkt.geo, pkt.uri, pkt.probability);
+    }
+
+    // Increment Live Ticker Counters
+    updateLiveCounters(pkt.probability >= 35);
+}
+
+let liveStreamInterval = null;
+
 function toggleWebSocketStream() {
     const btn = document.getElementById('btn-stream-sniff');
-    if (!socket) {
-        alert("WebSocket client not connected to server.");
-        return;
-    }
     
     if (!isStreamingSniff) {
         isStreamingSniff = true;
-        socket.emit('start_sniff_stream');
-        btn.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin"></i> STOP LIVE WEBSOCKET STREAM`;
+        btn.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin"></i> STOP LIVE TELEMETRY STREAM`;
         btn.classList.remove('btn-glow-danger');
         btn.classList.add('btn-outline-danger');
-        document.getElementById('sniffer-mode-text').innerText = "⚡ Live WebSocket streaming ACTIVE. Intercepting queries continuously...";
+        document.getElementById('sniffer-mode-text').innerText = "⚡ Live real-time telemetry streaming ACTIVE. Intercepting queries continuously...";
+        
+        if (socket && socket.connected) {
+            socket.emit('start_sniff_stream');
+        } else {
+            // Serverless / Cloud HTTP Polling Stream Fallback
+            console.log("Using Serverless Telemetry Stream Fallback...");
+            liveStreamInterval = setInterval(async () => {
+                if (!isStreamingSniff) return;
+                try {
+                    const response = await fetch('/api/sniff', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ timeout: 1.2 })
+                    });
+                    const data = await response.json();
+                    if (data.traffic && data.traffic.length > 0) {
+                        const tbody = document.getElementById('sniffer-table-body');
+                        if (tbody && tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+                        
+                        data.traffic.slice(0, 3).forEach(pkt => {
+                            const tr = document.createElement('tr');
+                            tr.className = 'live-ticker-box';
+                            tr.innerHTML = `
+                                <td><span class="badge bg-${pkt.badge_class} font-monospace">${pkt.badge}</span></td>
+                                <td class="text-${pkt.badge_class} fw-bold font-monospace">${pkt.probability}%</td>
+                                <td class="text-truncate text-light fw-medium" style="max-width: 320px;" title="${pkt.uri}">${pkt.uri}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-cyan py-0 px-2" onclick="inspectFromHistory('${pkt.uri.replace(/'/g, "\\'")}')">Analyze</button>
+                                </td>
+                            `;
+                            if (tbody) {
+                                tbody.insertBefore(tr, tbody.firstChild);
+                                if (tbody.children.length > 30) tbody.removeChild(tbody.lastChild);
+                            }
+                            if (pkt.geo) addGeoMarker(pkt.geo, pkt.uri, pkt.probability);
+                            updateLiveCounters(pkt.probability >= 35);
+                        });
+                    }
+                } catch (e) {}
+            }, 2000);
+        }
     } else {
         isStreamingSniff = false;
-        socket.emit('stop_sniff_stream');
-        btn.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin"></i> START LIVE WEBSOCKET STREAM`;
+        if (socket && socket.connected) {
+            socket.emit('stop_sniff_stream');
+        }
+        if (liveStreamInterval) {
+            clearInterval(liveStreamInterval);
+            liveStreamInterval = null;
+        }
+        btn.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin"></i> START LIVE TELEMETRY STREAM`;
         btn.classList.remove('btn-outline-danger');
         btn.classList.add('btn-glow-danger');
         document.getElementById('sniffer-mode-text').innerText = "Live streaming paused.";

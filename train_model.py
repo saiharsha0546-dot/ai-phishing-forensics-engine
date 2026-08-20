@@ -141,8 +141,6 @@ def generate_synthetic_email_dataset():
 
 def train_all_models():
     """Trains and saves both URL and Email RandomForest phishing classifiers with high-precision hyperparameter tuning."""
-    os.makedirs(MODELS_DIR, exist_ok=True)
-
     # 1. Train URL Model
     print("--- Training URL Phishing Classifier ---")
     url_df = generate_synthetic_url_dataset()
@@ -156,8 +154,6 @@ def train_all_models():
     u_preds = url_model.predict(X_test_u)
     u_acc = accuracy_score(y_test_u, u_preds)
     print(f"URL Model Accuracy: {u_acc*100:.2f}%")
-    joblib.dump(url_model, URL_MODEL_PATH)
-    print(f"Saved: {URL_MODEL_PATH}")
 
     # 2. Train Email Model
     print("\n--- Training Email Phishing Classifier ---")
@@ -172,10 +168,18 @@ def train_all_models():
     e_preds = email_model.predict(X_test_e)
     e_acc = accuracy_score(y_test_e, e_preds)
     print(f"Email Model Accuracy: {e_acc*100:.2f}%")
-    joblib.dump(email_model, EMAIL_MODEL_PATH)
-    print(f"Saved: {EMAIL_MODEL_PATH}")
+
+    try:
+        os.makedirs(MODELS_DIR, exist_ok=True)
+        joblib.dump(url_model, URL_MODEL_PATH)
+        joblib.dump(email_model, EMAIL_MODEL_PATH)
+        print(f"Saved models to disk inside {MODELS_DIR}")
+    except Exception as e:
+        print(f"Notice: Running on read-only serverless/cloud filesystem ({e}). Models kept securely in memory.")
 
     return {
+        'url_model': url_model,
+        'email_model': email_model,
         'url_accuracy': round(u_acc * 100, 2),
         'email_accuracy': round(e_acc * 100, 2)
     }

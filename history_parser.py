@@ -23,10 +23,10 @@ def get_browser_history(browser="all", limit=100):
     # Sort combined results by time descending
     results.sort(key=lambda x: x['time'], reverse=True)
 
-    # If no local history found (e.g. clean virtual machine or locked down permissions),
+    # If no local history found (e.g. clean virtual machine, cloud serverless Vercel container, or locked permissions),
     # provide rich simulated forensic browsing data for the SOC dashboard demonstration.
     if not results:
-        results = _get_mock_history()
+        results = _get_mock_history(browser=browser)
 
     return results[:limit]
 
@@ -140,10 +140,10 @@ def _get_firefox_history(limit=50):
                         pass
     return []
 
-def _get_mock_history():
-    """Returns realistic forensic sample history when running in restricted environments."""
+def _get_mock_history(browser="all"):
+    """Returns realistic forensic sample history when running in restricted environments or serverless containers."""
     now = datetime.now()
-    return [
+    all_mock = [
         {
             'url': 'http://secure-update-paypal-verify.login-bank.ru/signin.php?session=849302',
             'title': 'PayPal - Confirm Your Account Credentials',
@@ -185,5 +185,21 @@ def _get_mock_history():
             'title': 'Chase Online Bank Verification',
             'time': (now - timedelta(hours=6)).strftime('%Y-%m-%d %H:%M:%S'),
             'source': 'Edge (SOC Simulation)'
+        },
+        {
+            'url': 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers',
+            'title': 'HTTP Headers - MDN Web Docs',
+            'time': (now - timedelta(hours=7)).strftime('%Y-%m-%d %H:%M:%S'),
+            'source': 'Firefox (SOC Simulation)'
+        },
+        {
+            'url': 'http://account-suspended-confirm.login-paypal.ga/portal.php',
+            'title': 'Account Suspended - Resolution Portal',
+            'time': (now - timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
+            'source': 'Firefox (SOC Simulation)'
         }
     ]
+    if browser != "all":
+        filtered = [item for item in all_mock if browser.lower() in item['source'].lower()]
+        return filtered if filtered else all_mock
+    return all_mock
