@@ -430,16 +430,24 @@
                 <div class="glass-panel p-4">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
                         <div>
-                            <h5 class="section-title mb-1"><i class="fa-solid fa-clock-rotate-left text-cyan me-2"></i> Browser History Threat Hunter</h5>
-                            <p class="text-muted small mb-0">Scans local Chrome, Edge, or Firefox SQLite databases (or runs SOC Simulation) to detect historical phishing encounters.</p>
+                            <h5 class="section-title mb-1 d-flex align-items-center flex-wrap gap-2">
+                                <span><i class="fa-solid fa-clock-rotate-left text-cyan me-2"></i> Browser History Threat Hunter</span>
+                                <span id="ext-status-pill" class="badge bg-dark border border-secondary text-muted font-monospace" title="Checking for the SOC Forensics extension...">
+                                    <i class="fa-solid fa-plug me-1"></i> CHECKING EXTENSION
+                                </span>
+                            </h5>
+                            <p class="text-muted small mb-0">Captures live open tabs and real browser history via the SOC extension, or falls back to a local SQLite scan / SOC Simulation.</p>
                         </div>
                         <div class="d-flex align-items-center flex-wrap gap-2">
                             <input type="text" id="history-search-input" class="form-control form-control-sm bg-dark-glass text-light border-cyan font-monospace" placeholder="Filter URL or title..." oninput="filterBrowserHistory()" style="width: 180px;">
-                            <select id="history-browser-select" class="form-select form-select-sm bg-dark-glass text-light border-cyan" style="width: 150px;" onchange="loadBrowserHistory()">
-                                <option value="all">All Browsers</option>
-                                <option value="chrome">Google Chrome</option>
-                                <option value="edge">Microsoft Edge</option>
-                                <option value="firefox">Mozilla Firefox</option>
+                            <select id="history-browser-select" class="form-select form-select-sm bg-dark-glass text-light border-cyan" style="width: 200px;" onchange="loadBrowserHistory()">
+                                <option value="all">Auto (Live if available)</option>
+                                <option value="live_all">Live: Tabs + History</option>
+                                <option value="live_tabs">Live: Open Tabs Only</option>
+                                <option value="live_history">Live: Browser History</option>
+                                <option value="chrome">SQLite Scan: Chrome</option>
+                                <option value="edge">SQLite Scan: Edge</option>
+                                <option value="firefox">SQLite Scan: Firefox</option>
                             </select>
                             <button class="btn btn-outline-warning btn-sm fw-bold px-2 d-flex align-items-center gap-1" onclick="sortHistoryByScore()" title="Sort by Threat Score">
                                 <i class="fa-solid fa-arrow-down-9-1"></i> Sort Score
@@ -587,7 +595,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Custom SOC Dashboard Logic -->
-    <script src="/static/js/dashboard.js?v=9"></script>
+    <script src="/static/js/dashboard.js?v=10"></script>
 
     <!-- Opening Animation Symphony Orchestration -->
     <script>

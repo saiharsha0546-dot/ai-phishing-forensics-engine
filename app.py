@@ -470,6 +470,64 @@ def extension_report():
     except Exception as e:
         return jsonify({'error': f'Extension URL analysis failed: {str(e)}'}), 500
 
+@app.route('/api/analyze/batch', methods=['POST', 'OPTIONS'])
+def analyze_batch():
+    """
+    Scores many URLs in a single round trip.
+
+    Used by the browser extension so a 45-entry live-tab or history pull is
+    one request instead of 45. Returns results in the same order as the input
+    and never raises on an individual bad URL - that entry simply comes back
+    with an 'error' key so the client can render it as 'Unscored'.
+    """
+    if request.method == 'OPTIONS':
+        response = jsonify({})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST")
+        return response
+
+    data = request.get_json() or {}
+    urls = data.get('urls') or []
+    if not isinstance(urls, list):
+        return jsonify({'error': 'Field "urls" must be a list'}), 400
+
+    # Hard cap keeps a single serverless invocation inside its time budget.
+    MAX_BATCH = 100
+    urls = [u.strip() for u in urls if isinstance(u, str) and u.strip()][:MAX_BATCH]
+
+    results = []
+    for url in urls:
+        try:
+            vec, feat_dict = extract_url_features(url, timeout=0.05, skip_whois=True)
+            X = np.array([vec])
+            proba = float(url_model.predict_proba(X)[0][1])
+            pct = round(proba * 100, 1)
+
+            if proba >= 0.7:
+                badge, badge_class, risk_level = "High Risk", "danger", "High Risk (Phishing)"
+            elif proba >= 0.35:
+                badge, badge_class, risk_level = "Suspicious", "warning", "Suspicious"
+            else:
+                badge, badge_class, risk_level = "Safe", "success", "Safe"
+
+            results.append({
+                'url': url,
+                'probability': pct,
+                'risk_level': risk_level,
+                'badge': badge,
+                'badge_class': badge_class,
+                'features': feat_dict,
+                'geo': get_geo_metadata(url, pct),
+                'mode': 'chrome-extension'
+            })
+        except Exception as e:
+            results.append({'url': url, 'error': str(e)})
+
+    response = jsonify({'results': results, 'count': len(results)})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
 @app.route('/api/samples', methods=['GET'])
 def get_samples():
     """Returns pre-built sample .eml files and URLs for easy testing."""

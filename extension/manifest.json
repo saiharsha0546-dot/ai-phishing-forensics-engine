@@ -1,13 +1,17 @@
 {
   "manifest_version": 3,
   "name": "SOC Forensics Real-time Telemetry",
-  "version": "1.0",
-  "description": "Streams live browser navigation events directly to your SOC Forensics Engine backend.",
+  "version": "2.0",
+  "description": "Streams live tabs, real browser history and navigation events into your SOC Forensics Engine dashboard.",
+  "minimum_chrome_version": "102",
   "permissions": [
     "webNavigation",
+    "history",
+    "tabs",
+    "scripting",
     "storage",
-    "notifications",
-    "tabs"
+    "alarms",
+    "notifications"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -17,12 +21,24 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "SOC Telemetry Config"
+    "default_title": "SOC Telemetry Config",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content_script.js"]
+      "js": ["content_script.js"],
+      "run_at": "document_start",
+      "all_frames": false
     }
   ]
 }

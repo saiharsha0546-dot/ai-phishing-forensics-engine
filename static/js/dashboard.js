@@ -332,28 +332,95 @@ function renderEmailReport(data) {
 }
 
 // --- Browser History Threat Hunter ---
-async function loadBrowserHistory() {
-    const browser = document.getElementById('history-browser-select') ? document.getElementById('history-browser-select').value : 'all';
-    const tbody = document.getElementById('history-table-body');
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm text-cyan me-2"></span> Scanning local SQLite history databases...</td></tr>`;
 
-    try {
-        const response = await fetch(`/api/history?browser=${browser}&limit=45`);
-        const data = await response.json();
-        if (data.error) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">${data.error}</td></tr>`;
+// Maps the dropdown value to an extension request type. Anything not in here
+// is a server-side SQLite scan against /api/history.
+const LIVE_SOURCE_MAP = {
+    live_all: 'SOC_GET_COMBINED',
+    live_tabs: 'SOC_GET_LIVE_TABS',
+    live_history: 'SOC_GET_HISTORY'
+};
+
+function setHistoryStatus(html, cls = 'text-muted') {
+    const tbody = document.getElementById('history-table-body');
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 ${cls}">${html}</td></tr>`;
+    }
+}
+
+async function loadBrowserHistory() {
+    const sel = document.getElementById('history-browser-select');
+    const browser = sel ? sel.value : 'all';
+
+    let requestType = LIVE_SOURCE_MAP[browser];
+
+    // 'all' means "give me the best available". If the extension is up, that
+    // is real live data; otherwise fall through to the server-side scan,
+    // which on Vercel can only return SOC Simulation records.
+    const autoLive = !requestType && browser === 'all';
+    if (autoLive) {
+        if (!SOCExt.ready) await SOCExt.detect();
+        if (SOCExt.ready) requestType = 'SOC_GET_COMBINED';
+    }
+
+    if (requestType) {
+        setHistoryStatus(
+            `<span class="spinner-border spinner-border-sm text-cyan me-2"></span> Pulling live tabs & history from the browser extension...`,
+            'text-cyan'
+        );
+
+        if (!SOCExt.ready) await SOCExt.detect();
+
+        if (SOCExt.ready) {
+            const res = await SOCExt.request(requestType, { limit: 45, days: 14 });
+            if (res && res.ok) {
+                applyHistoryPayload(res.history || []);
+                return;
+            }
+            // An explicit live selection should report the real error rather
+            // than silently swapping in simulated data.
+            if (!autoLive) {
+                setHistoryStatus(
+                    `<i class="fa-solid fa-triangle-exclamation me-1"></i> Live capture failed: ${(res && res.error) || 'unknown error'}`,
+                    'text-danger'
+                );
+                return;
+            }
+        } else if (!autoLive) {
+            setHistoryStatus(
+                `<i class="fa-solid fa-plug-circle-xmark me-1"></i> Extension not detected. Load it via chrome://extensions &rarr; Load unpacked, then reload this page.`,
+                'text-warning'
+            );
             return;
         }
-
-        rawHistoryData = data.history || [];
-        rawHistoryData.forEach(item => {
-            if (item.geo) addGeoMarker(item.geo, item.url, item.probability);
-            if (item.probability >= 35) updateLiveCounters(true);
-        });
-        renderHistoryTable();
-    } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Failed to scan history: ${err}</td></tr>`;
     }
+
+    // ---- Server-side fallback (local SQLite scan, or SOC Simulation) ----
+    setHistoryStatus(
+        `<span class="spinner-border spinner-border-sm text-cyan me-2"></span> Scanning local SQLite history databases...`
+    );
+
+    try {
+        const serverBrowser = LIVE_SOURCE_MAP[browser] ? 'all' : browser;
+        const response = await fetch(`/api/history?browser=${serverBrowser}&limit=45`);
+        const data = await response.json();
+        if (data.error) {
+            setHistoryStatus(data.error, 'text-danger');
+            return;
+        }
+        applyHistoryPayload(data.history || []);
+    } catch (err) {
+        setHistoryStatus(`Failed to scan history: ${err}`, 'text-danger');
+    }
+}
+
+function applyHistoryPayload(items) {
+    rawHistoryData = items;
+    rawHistoryData.forEach(item => {
+        if (item.geo) addGeoMarker(item.geo, item.url, item.probability);
+        if (item.probability >= 35) updateLiveCounters(true);
+    });
+    renderHistoryTable();
 }
 
 function renderHistoryTable() {
@@ -550,13 +617,104 @@ function initSocketIO() {
     });
 }
 
-// Window Message Listener for Serverless Extension Bridge
+// ===================================================================
+// Serverless Extension Bridge
+// -------------------------------------------------------------------
+// The page cannot call chrome.* APIs. The extension's content script
+// relays for us over window.postMessage. This client handles three
+// message shapes coming back:
+//   { payload }                  -> pushed live telemetry event
+//   { type:'SOC_EXT_READY' }     -> extension announced itself
+//   { type:'SOC_RESPONSE', ... } -> reply to one of our data pulls
+// ===================================================================
+
+const SOCExt = {
+    ready: false,
+    version: null,
+    browser: null,
+    _pending: new Map(),
+    _seq: 0,
+
+    request(type, extra = {}, timeoutMs = 25000) {
+        return new Promise((resolve) => {
+            const requestId = `soc-${Date.now()}-${++this._seq}`;
+            const timer = setTimeout(() => {
+                if (this._pending.has(requestId)) {
+                    this._pending.delete(requestId);
+                    resolve({ ok: false, error: 'Extension did not respond. Is it installed and enabled for this site?' });
+                }
+            }, timeoutMs);
+            this._pending.set(requestId, (response) => {
+                clearTimeout(timer);
+                resolve(response);
+            });
+            window.postMessage(
+                Object.assign({ target: 'soc-extension', type, requestId }, extra),
+                window.location.origin
+            );
+        });
+    },
+
+    _resolve(requestId, response) {
+        const cb = this._pending.get(requestId);
+        if (!cb) return;
+        this._pending.delete(requestId);
+        cb(response);
+    },
+
+    async detect() {
+        const res = await this.request('SOC_PING', {}, 4000);
+        this.ready = !!(res && res.ok);
+        if (this.ready) {
+            this.version = res.version;
+            this.browser = res.browser;
+            // Tell the extension which origin to score against, so the popup
+            // never has to be configured by hand.
+            this.request('SOC_SET_BACKEND', { origin: window.location.origin }, 4000);
+        }
+        updateExtStatusPill();
+        return this.ready;
+    }
+};
+
+function updateExtStatusPill() {
+    const pill = document.getElementById('ext-status-pill');
+    if (!pill) return;
+    if (SOCExt.ready) {
+        pill.className = 'badge bg-dark border border-success text-success font-monospace';
+        pill.innerHTML = `<i class="fa-solid fa-plug-circle-check me-1"></i> EXTENSION LIVE v${SOCExt.version || '?'}`;
+        pill.title = `Capturing live tabs and history from ${SOCExt.browser || 'this browser'}`;
+    } else {
+        pill.className = 'badge bg-dark border border-secondary text-muted font-monospace';
+        pill.innerHTML = `<i class="fa-solid fa-plug-circle-xmark me-1"></i> EXTENSION OFFLINE`;
+        pill.title = 'Install/enable the SOC Forensics extension to capture live tabs.';
+    }
+}
+
 window.addEventListener('message', (event) => {
-    // We only accept messages from our extension
-    if (event.data && event.data.source === 'soc-extension' && event.data.payload) {
-        handleLiveTelemetry(event.data.payload);
+    // Only accept messages this page posted to itself via the content script.
+    if (event.source !== window) return;
+    const data = event.data;
+    if (!data || data.source !== 'soc-extension') return;
+
+    if (data.type === 'SOC_RESPONSE') {
+        SOCExt._resolve(data.requestId, data.response);
+        return;
+    }
+
+    if (data.type === 'SOC_EXT_READY') {
+        if (!SOCExt.ready) SOCExt.detect();
+        return;
+    }
+
+    if (data.payload) {
+        handleLiveTelemetry(data.payload);
     }
 });
+
+// Probe once at load; the content script also announces itself, which covers
+// the case where the extension is installed after the page was opened.
+document.addEventListener('DOMContentLoaded', () => { SOCExt.detect(); });
 
 function handleLiveTelemetry(pkt) {
     // Handle incoming live stream packet
