@@ -119,8 +119,11 @@
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-cyber-lime selection:text-background">
 
-<nav class="fixed top-0 right-0 left-64 h-16 border-b border-glass-stroke bg-glass-fill dark:bg-glass-fill flex justify-between items-center px-gutter w-[calc(100%-16rem)] z-50 glass-panel">
+<nav id="top-navbar" class="fixed top-0 right-0 left-64 h-16 border-b border-glass-stroke bg-glass-fill dark:bg-glass-fill flex justify-between items-center px-gutter w-[calc(100%-16rem)] z-50 glass-panel transition-all duration-300">
 <div class="flex items-center gap-4">
+<button id="sidebar-toggle" class="text-on-surface-variant hover:text-cyber-lime transition-colors">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
 <span class="font-headline-md text-headline-md font-black text-on-surface tracking-widest uppercase">FORENSIC_ENGINE</span>
 </div>
 <div class="flex items-center gap-6">
@@ -138,7 +141,7 @@
 </div>
 </nav>
 
-<aside class="h-screen w-64 fixed left-0 top-0 border-r border-glass-stroke bg-glass-fill dark:bg-glass-fill flex flex-col backdrop-blur-[24px] shadow-[0_0_15px_rgba(50,255,126,0.1)] z-50">
+<aside id="main-sidebar" class="h-screen w-64 fixed left-0 top-0 border-r border-glass-stroke bg-glass-fill dark:bg-glass-fill flex flex-col backdrop-blur-[24px] shadow-[0_0_15px_rgba(50,255,126,0.1)] z-50 transition-transform duration-300 transform">
 <div class="p-6 border-b border-glass-stroke flex flex-col gap-2">
 <h1 class="font-headline-md text-headline-md font-bold text-cyber-lime uppercase tracking-tighter">CYBER_OS v2.4</h1>
 <span class="font-code-sm text-code-sm text-on-surface-variant">SOC Node: Delta-9</span>
@@ -185,7 +188,7 @@
 </div>
 </aside>
 
-<main class="ml-64 pt-16 pb-8 min-h-screen bg-background relative z-0">
+<main id="main-content" class="ml-64 pt-16 pb-8 min-h-screen bg-background relative z-0 transition-all duration-300">
 <nav class="sticky top-16 z-30 bg-background/80 backdrop-blur-md border-b border-glass-stroke px-container-margin py-3">
   <div class="max-w-7xl mx-auto flex items-center gap-2 font-code-sm text-xs text-on-surface-variant">
     <span class="hover:text-cyber-lime cursor-pointer">Home</span>
@@ -481,7 +484,7 @@
 </div>
 </main>
 
-<footer class="fixed bottom-0 right-0 left-64 h-8 border-t border-glass-stroke bg-surface-container-lowest flex items-center justify-between px-gutter w-[calc(100%-16rem)] z-40 overflow-hidden">
+<footer id="main-footer" class="fixed bottom-0 right-0 left-64 h-8 border-t border-glass-stroke bg-surface-container-lowest flex items-center justify-between px-gutter w-[calc(100%-16rem)] z-40 overflow-hidden transition-all duration-300">
 <span class="font-code-sm text-cyber-lime whitespace-nowrap opacity-80">© 2026 OBSIDIAN FORENSICS</span>
 <div class="flex gap-8 whitespace-nowrap overflow-hidden relative flex-1 ml-8">
 <div class="marquee-scroll flex gap-8 font-label-caps text-label-caps text-on-surface-variant w-full">

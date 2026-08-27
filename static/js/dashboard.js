@@ -21,7 +21,43 @@ document.addEventListener('DOMContentLoaded', () => {
     try { initSocketIO(); } catch (e) { console.warn("Socket.IO init error:", e); }
     try { initTabs(); } catch (e) { console.warn("Tabs init error:", e); }
     try { initKeyboardShortcuts(); } catch (e) { console.warn("Shortcuts init error:", e); }
+    try { initSidebarToggle(); } catch (e) { console.warn("Sidebar toggle init error:", e); }
 });
+
+// --- Sidebar Toggle Logic ---
+function initSidebarToggle() {
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('main-sidebar');
+    const navbar = document.getElementById('top-navbar');
+    const main = document.getElementById('main-content');
+    const footer = document.getElementById('main-footer');
+
+    if (!toggleBtn || !sidebar) return;
+
+    toggleBtn.addEventListener('click', () => {
+        if (sidebar.classList.contains('-translate-x-full')) {
+            // Open sidebar
+            sidebar.classList.remove('-translate-x-full');
+            navbar.classList.remove('left-0', 'w-full');
+            navbar.classList.add('left-64', 'w-[calc(100%-16rem)]');
+            main.classList.remove('ml-0');
+            main.classList.add('ml-64');
+            footer.classList.remove('left-0', 'w-full');
+            footer.classList.add('left-64', 'w-[calc(100%-16rem)]');
+        } else {
+            // Close sidebar
+            sidebar.classList.add('-translate-x-full');
+            navbar.classList.remove('left-64', 'w-[calc(100%-16rem)]');
+            navbar.classList.add('left-0', 'w-full');
+            main.classList.remove('ml-64');
+            main.classList.add('ml-0');
+            footer.classList.remove('left-64', 'w-[calc(100%-16rem)]');
+            footer.classList.add('left-0', 'w-full');
+        }
+        
+        setTimeout(() => { if (threatMapInstance) threatMapInstance.invalidateSize(); }, 350);
+    });
+}
 
 // --- Tab Logic ---
 function initTabs() {
@@ -693,7 +729,13 @@ function addGeoMarker(geo, label, proba, isLiveFocus = false) {
     
     const layers = mapMarkersLayer.getLayers();
     if (layers.length > 25) mapMarkersLayer.removeLayer(layers[0]);
-    if (isLiveFocus && threatMapInstance) threatMapInstance.flyTo([geo.lat, geo.lon], 4, { animate: true, duration: 1.5 });
+    
+    if (isLiveFocus && threatMapInstance) {
+        const mapContainer = document.getElementById('threatMap');
+        if (mapContainer && mapContainer.offsetHeight > 0) {
+            threatMapInstance.flyTo([geo.lat, geo.lon], 4, { animate: true, duration: 1.5 });
+        }
+    }
 }
 
 function renderShapBars(containerId, barsId, shapData) {
@@ -706,7 +748,7 @@ function renderShapBars(containerId, barsId, shapData) {
     if (shapData.positive_forces) {
         shapData.positive_forces.forEach(item => {
             barsElem.innerHTML += `<div class="flex items-center gap-2">
-                <span class="w-24 truncate" title="${item.feature}">${item.feature}</span>
+                <span class="w-24 truncate" title="${item.name}">${item.name}</span>
                 <div class="flex-1 bg-surface-variant h-2 rounded"><div class="bg-neon-crimson h-full rounded shadow-[0_0_8px_rgba(255,63,52,0.6)]" style="width: ${Math.min(100, Math.abs(item.contribution) * 2.5)}%;"></div></div>
                 <span class="text-neon-crimson w-12 text-right">+${item.contribution}%</span>
             </div>`;
@@ -715,7 +757,7 @@ function renderShapBars(containerId, barsId, shapData) {
     if (shapData.negative_forces) {
         shapData.negative_forces.forEach(item => {
             barsElem.innerHTML += `<div class="flex items-center gap-2">
-                <span class="w-24 truncate" title="${item.feature}">${item.feature}</span>
+                <span class="w-24 truncate" title="${item.name}">${item.name}</span>
                 <div class="flex-1 bg-surface-variant h-2 rounded"><div class="bg-cyber-lime h-full rounded shadow-[0_0_8px_rgba(50,255,126,0.6)]" style="width: ${Math.min(100, Math.abs(item.contribution) * 2.5)}%;"></div></div>
                 <span class="text-cyber-lime w-12 text-right">-${item.contribution}%</span>
             </div>`;
