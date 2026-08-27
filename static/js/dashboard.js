@@ -315,6 +315,8 @@ async function analyzeUrl() {
         document.getElementById('url-feat-entropy').innerText = data.features.entropy;
         document.getElementById('url-feat-kw').innerText = `${data.features.suspicious_keywords_count}`;
         document.getElementById('url-feat-https').innerText = data.features.is_https ? "Yes" : "No";
+        document.getElementById('url-feat-lat').innerText = data.geo && data.geo.lat ? data.geo.lat : "N/A";
+        document.getElementById('url-feat-lon').innerText = data.geo && data.geo.lon ? data.geo.lon : "N/A";
 
         const factorsList = document.getElementById('url-risk-factors-list');
         factorsList.innerHTML = "";
@@ -631,7 +633,7 @@ function sortHistoryByScore() {
 }
 
 function inspectFromHistory(url) {
-    switchTab('pane-url');
+    switchTab('tab-url');
     setAndAnalyzeUrl(url);
 }
 
@@ -897,29 +899,29 @@ function updateLiveCounters(isThreat = false) {
 
 function initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        if (e.altKey && e.key === '1') { e.preventDefault(); switchTab('pane-dashboard'); }
-        if (e.altKey && e.key === '2') { e.preventDefault(); switchTab('pane-url'); }
-        if (e.altKey && e.key === '3') { e.preventDefault(); switchTab('pane-email'); }
-        if (e.altKey && e.key === '4') { e.preventDefault(); switchTab('pane-network'); }
+        if (e.altKey && e.key === '1') { e.preventDefault(); switchTab('tab-dashboard'); }
+        if (e.altKey && e.key === '2') { e.preventDefault(); switchTab('tab-url'); }
+        if (e.altKey && e.key === '3') { e.preventDefault(); switchTab('tab-email'); }
+        if (e.altKey && e.key === '4') { e.preventDefault(); switchTab('tab-history'); }
         if (e.altKey && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); runPresentationDemo(); }
     });
 }
 
 async function runPresentationDemo() {
-    switchTab('pane-url');
+    switchTab('tab-url');
     setAndAnalyzeUrl("http://secure-login-paypal-update-account.ru/signin");
     await new Promise(r => setTimeout(r, 2000));
     
     if (threatMapInstance) threatMapInstance.setView([55.7558, 37.6173], 4, { animate: true, duration: 1 });
     await new Promise(r => setTimeout(r, 2000));
     
-    switchTab('pane-email');
+    switchTab('tab-email');
     await new Promise(r => setTimeout(r, 600));
     const sampleBtns = document.querySelectorAll('#sample-emails-list button');
     if (sampleBtns.length > 0) sampleBtns[0].click();
     
     await new Promise(r => setTimeout(r, 2500));
-    switchTab('pane-network');
+    switchTab('tab-history');
     loadBrowserHistory();
     await new Promise(r => setTimeout(r, 2000));
     if (!isStreamingSniff) toggleWebSocketStream();

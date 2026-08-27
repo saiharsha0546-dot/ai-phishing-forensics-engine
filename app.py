@@ -63,7 +63,12 @@ def load_or_train_models():
     except Exception as e:
         print(f"SHAP explainer init note: {e}")
 
-load_or_train_models()
+# load_or_train_models() # Removed for lazy loading
+
+@app.before_request
+def ensure_models_loaded():
+    if request.path.startswith('/api/') and (url_model is None or email_model is None):
+        load_or_train_models()
 
 def compute_shap_explanation(explainer, vec, feature_names):
     """Computes exact SHAP positive and negative feature forces for a prediction vector."""
