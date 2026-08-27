@@ -11,3 +11,4 @@ python-whois
 textblob
 beautifulsoup4
 gunicorn
+requests
