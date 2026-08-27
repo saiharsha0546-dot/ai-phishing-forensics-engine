@@ -709,7 +709,9 @@ function initThreatMap() {
     const mapContainer = document.getElementById('threatMap');
     if (!mapContainer || typeof L === 'undefined') return;
     threatMapInstance = L.map('threatMap', { center: [20.0, 0.0], zoom: 2, minZoom: 2, maxBounds: [[-90, -180], [90, 180]], zoomControl: false, attributionControl: false });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, subdomains: 'abcd', noWrap: true }).addTo(threatMapInstance);
+    
+    // Using OpenStreetMap instead of CartoDB to avoid "API KEY REQUIRED" watermarks
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, noWrap: true }).addTo(threatMapInstance);
     mapMarkersLayer = L.layerGroup().addTo(threatMapInstance);
     
     addGeoMarker({ lat: 55.7558, lon: 37.6173, city: 'Moscow' }, 'http://secure-verify-paypal-login.ru', 94.2);
