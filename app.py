@@ -718,7 +718,14 @@ def retrain():
     try:
         results = train_model.train_all_models()
         load_or_train_models()
-        return jsonify({'status': 'Retraining successful', 'metrics': results})
+        
+        # Filter out the model objects to avoid JSON serialization errors
+        metrics = {
+            'url_accuracy': results.get('url_accuracy'),
+            'email_accuracy': results.get('email_accuracy')
+        }
+        
+        return jsonify({'status': 'Retraining successful', 'metrics': metrics})
     except Exception as e:
         return jsonify({'error': f'Retraining failed: {str(e)}'}), 500
 
