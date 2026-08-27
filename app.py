@@ -685,7 +685,7 @@ def handle_start_sniff():
                     badge_class = "success"
                     
                 geo = get_geo_metadata(u, round(proba * 100, 1))
-                socketio.emit('packet', {
+                socketio.emit('packet_event', {
                     'uri': u,
                     'probability': round(proba * 100, 1),
                     'badge': badge,

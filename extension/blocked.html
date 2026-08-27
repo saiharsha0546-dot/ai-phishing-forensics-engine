@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Blocked</title>
+    <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+    <div class="container">
+        <div class="icon-blocked">🛑</div>
+        <h1>Site Blocked</h1>
+        <p>You have blocked access to this site due to security risks.</p>
+        <div class="url-box" id="blocked-url"></div>
+        <p class="safe-text">Your browser is protected. You can safely close this tab.</p>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const url = params.get('url');
+            if (url) {
+                document.getElementById('blocked-url').textContent = url;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Save config
+    // Save config on button click
     saveBtn.addEventListener('click', () => {
         const url = backendUrlInput.value.trim().replace(/\/$/, ""); // remove trailing slash
         const enabled = enableToggle.checked;
@@ -33,6 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 statusDiv.textContent = '';
             }, 2000);
+        });
+    });
+
+    // Auto-save toggle on change
+    enableToggle.addEventListener('change', () => {
+        chrome.storage.local.set({
+            isEnabled: enableToggle.checked
         });
     });
 });

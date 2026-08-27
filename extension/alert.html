@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High Threat Detected</title>
+    <link rel="stylesheet" href="alert.css">
+</head>
+<body>
+    <div class="container">
+        <div class="icon-warning">⚠️</div>
+        <h1>Security Alert: High Threat Detected</h1>
+        <p>Our threat hunter has detected a high probability of phishing or malicious activity on the following link:</p>
+        
+        <div class="url-box" id="malicious-url">Loading...</div>
+        
+        <div class="probability">
+            Threat Probability: <span id="probability-score">--</span>%
+        </div>
+
+        <p class="warning-text">For your safety, we strongly recommend blocking this link to prevent accidental navigation in the future.</p>
+
+        <div class="actions">
+            <button id="btn-block" class="btn btn-danger">Block This Link</button>
+            <button id="btn-ignore" class="btn btn-secondary">Ignore & Close Alert</button>
+        </div>
+    </div>
+    <script src="alert.js"></script>
+</body>
+</html>

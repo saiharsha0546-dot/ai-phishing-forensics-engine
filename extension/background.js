@@ -18,18 +18,22 @@ const DASHBOARD_MATCHES = [
 
 let backendUrl = DEFAULT_BACKEND;
 let isEnabled = true;
+let blocklist = [];
 
 /* ------------------------------------------------------------------ config */
-
-chrome.storage.local.get(["backendUrl", "isEnabled"], (result) => {
-    // Migration: older builds shipped a localhost default that silently failed
-    // for anyone running the dashboard on Vercel. Treat it as "unset".
-    const stored = (result.backendUrl || "").trim();
-    const isStaleLocalDefault = stored === "http://127.0.0.1:5000" || stored === "";
-    backendUrl = isStaleLocalDefault ? DEFAULT_BACKEND : stored.replace(/\/+$/, "");
-    if (isStaleLocalDefault) chrome.storage.local.set({ backendUrl });
-    if (result.isEnabled !== undefined) isEnabled = result.isEnabled;
-    updateIcon();
+let configLoaded = new Promise((resolve) => {
+    chrome.storage.local.get(["backendUrl", "isEnabled", "blocklist"], (result) => {
+        // Migration: older builds shipped a localhost default that silently failed
+        // for anyone running the dashboard on Vercel. Treat it as "unset".
+        const stored = (result.backendUrl || "").trim();
+        const isStaleLocalDefault = stored === "http://127.0.0.1:5000" || stored === "";
+        backendUrl = isStaleLocalDefault ? DEFAULT_BACKEND : stored.replace(/\/+$/, "");
+        if (isStaleLocalDefault) chrome.storage.local.set({ backendUrl });
+        if (result.isEnabled !== undefined) isEnabled = result.isEnabled;
+        if (result.blocklist) blocklist = result.blocklist;
+        updateIcon();
+        resolve();
+    });
 });
 
 chrome.storage.onChanged.addListener((changes) => {
@@ -38,6 +42,7 @@ chrome.storage.onChanged.addListener((changes) => {
         isEnabled = changes.isEnabled.newValue;
         updateIcon();
     }
+    if (changes.blocklist) blocklist = changes.blocklist.newValue || [];
 });
 
 function updateIcon() {
@@ -272,6 +277,7 @@ async function collectHistory(limit = 45, days = 14) {
 /* ------------------------------------------------- dashboard pull handler */
 
 async function handleDashboardRequest(request) {
+    await configLoaded;
     switch (request.type) {
         case "SOC_PING":
             return {
@@ -283,16 +289,19 @@ async function handleDashboardRequest(request) {
             };
 
         case "SOC_GET_LIVE_TABS": {
+            if (!isEnabled) return { ok: false, error: 'Extension is currently OFF' };
             const items = await collectLiveTabs();
             return { ok: true, history: await scoreMany(items), count: items.length };
         }
 
         case "SOC_GET_HISTORY": {
+            if (!isEnabled) return { ok: false, error: 'Extension is currently OFF' };
             const items = await collectHistory(request.limit || 45, request.days || 14);
             return { ok: true, history: await scoreMany(items), count: items.length };
         }
 
         case "SOC_GET_COMBINED": {
+            if (!isEnabled) return { ok: false, error: 'Extension is currently OFF' };
             const [tabs, hist] = await Promise.all([
                 collectLiveTabs(),
                 collectHistory(request.limit || 40, request.days || 14)
@@ -325,6 +334,23 @@ async function handleDashboardRequest(request) {
 
 // Content-script relay (page -> content script -> here -> back).
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request && request.type === "BLOCK_URL") {
+        const urlToBlock = request.payload.url;
+        const originalTabId = request.payload.tabId;
+        
+        if (!blocklist.includes(urlToBlock)) {
+            blocklist.push(urlToBlock);
+            chrome.storage.local.set({ blocklist });
+        }
+        
+        if (originalTabId) {
+            chrome.tabs.remove(originalTabId).catch(() => {});
+        }
+        
+        sendResponse({ ok: true });
+        return false;
+    }
+
     if (!request || !request.type || !request.type.startsWith("SOC_")) return false;
     handleDashboardRequest(request)
         .then(sendResponse)
@@ -334,7 +360,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 /* ------------------------------------------------- navigation telemetry */
 
-async function reportAndBridge(url, modeLabel) {
+async function reportAndBridge(url, modeLabel, tabId = null) {
+    await configLoaded;
     if (!isEnabled || !isReportableUrl(url)) return;
     // Never report the dashboard's own origin back to itself.
     if (backendUrl && url.startsWith(backendUrl)) return;
@@ -348,16 +375,10 @@ async function reportAndBridge(url, modeLabel) {
         return;
     }
 
-    if (data.risk_level === "High Risk (Phishing)") {
-        try {
-            chrome.notifications.create({
-                type: "basic",
-                iconUrl: chrome.runtime.getURL("icons/icon128.png"),
-                title: "SOC Forensics Alert",
-                message: `Phishing Threat Detected: ${url}\nProbability: ${data.probability}%`,
-                priority: 2
-            }, () => void chrome.runtime.lastError);
-        } catch (e) { /* notifications unavailable */ }
+    if (data.risk_level === "High Risk (Phishing)" || data.probability >= 70) {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL("alert.html") + "?url=" + encodeURIComponent(data.url) + "&prob=" + data.probability + (tabId ? "&tabId=" + tabId : "")
+        });
         flashBadge("DANGER", "#ff3366");
     }
 
@@ -377,7 +398,16 @@ async function reportAndBridge(url, modeLabel) {
 
 chrome.webNavigation.onCommitted.addListener((details) => {
     if (details.frameId !== 0) return;
-    reportAndBridge(details.url, "chrome-extension");
+    reportAndBridge(details.url, "chrome-extension", details.tabId);
+});
+
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId !== 0) return;
+    if (blocklist.includes(details.url)) {
+        chrome.tabs.update(details.tabId, { 
+            url: chrome.runtime.getURL("blocked.html") + "?url=" + encodeURIComponent(details.url) 
+        });
+    }
 });
 
 // Live tab activity: a tab finishing a load, or the user switching to one,
@@ -396,7 +426,7 @@ function throttled(url, ms = 60000) {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status !== "complete") return;
     if (!isReportableUrl(tab.url) || throttled(tab.url)) return;
-    reportAndBridge(tab.url, "live-tab");
+    reportAndBridge(tab.url, "live-tab", tabId);
 });
 
 // Re-inject the bridge whenever a dashboard tab finishes loading.

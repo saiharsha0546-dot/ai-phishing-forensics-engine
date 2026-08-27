@@ -61,7 +61,11 @@ def _get_live_system_network_capture():
     # 1. Capture real live DNS lookups from Windows Resolver Cache
     if os.name == 'nt':
         try:
-            out = subprocess.check_output(["ipconfig", "/displaydns"], stderr=subprocess.DEVNULL, timeout=4).decode('utf-8', errors='ignore')
+            raw_out = subprocess.check_output(["ipconfig", "/displaydns"], stderr=subprocess.DEVNULL, timeout=4)
+            try:
+                out = raw_out.decode('mbcs', errors='ignore')
+            except Exception:
+                out = raw_out.decode('utf-8', errors='ignore')
             for line in out.splitlines():
                 if 'Record Name' in line or 'Record Name . . . . . :' in line:
                     parts = line.split(':')
@@ -103,27 +107,81 @@ def _get_live_system_network_capture():
             "http://185.220.101.42/payload/agent_update.exe"
         ])
 
-    picked_domains = random.sample(domain_list, min(len(domain_list), random.randint(6, 14)))
-    picked_urls = random.sample(url_list, min(len(url_list), random.randint(5, 12)))
     mode_str = "Live Windows Network & DNS Stream" if os.name == 'nt' else "Live SOC Telemetry & DNS Stream"
 
-    return picked_domains, picked_urls, mode_str
+    return domain_list, url_list, mode_str
 
 def capture_packets_stream(callback, stop_event=None, interval=1.2):
     """
     Continuous streaming generator/callback for real-time WebSocket live sniffer.
-    Continually pulls live system network queries and yields them to the SocketIO emitter.
+    Attempts to run tshark for real-time capture. If unavailable, safely polls
+    system records and only yields newly seen network events.
     """
+    # 1. Try real-time streaming with tshark
+    tshark_cmd = [
+        "tshark", "-l", "-Y", "dns.qry.name or http.request.uri", 
+        "-T", "fields", "-e", "dns.qry.name", "-e", "http.request.uri"
+    ]
+    
+    try:
+        proc = subprocess.Popen(tshark_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1)
+        time.sleep(0.5)
+        if proc.poll() is None:
+            import threading
+            import queue
+            q = queue.Queue()
+            
+            def reader_thread(out, q):
+                for line in iter(out.readline, ''):
+                    if not line: break
+                    q.put(line)
+                out.close()
+                
+            t = threading.Thread(target=reader_thread, args=(proc.stdout, q), daemon=True)
+            t.start()
+            
+            while stop_event is None or not stop_event.is_set():
+                try:
+                    line = q.get(timeout=0.5)
+                    line = line.strip()
+                    if not line: continue
+                    parts = line.split('\t')
+                    dns_val = parts[0] if len(parts) > 0 else ""
+                    http_val = parts[1] if len(parts) > 1 else ""
+                    if dns_val: callback(f"https://{dns_val}", "tshark (Live Stream)")
+                    if http_val: callback(http_val, "tshark (Live Stream)")
+                except queue.Empty:
+                    pass
+            proc.terminate()
+            return
+    except Exception:
+        pass # fallback
+        
+    # 2. Fallback polling loop (stateful)
+    seen_items = set()
+    first_run = True
+    
     while stop_event is None or not stop_event.is_set():
         try:
             domains, urls, mode = _get_live_system_network_capture()
-            # Interleave domains and URLs for live real-time feel
             stream_pool = [f"https://{d}" for d in domains] + urls
-            random.shuffle(stream_pool)
-            for item in stream_pool[:6]:
-                if stop_event is not None and stop_event.is_set():
-                    break
-                callback(item, mode)
-                time.sleep(interval)
+            
+            # Find strictly new items
+            new_items = [item for item in stream_pool if item not in seen_items]
+            
+            if first_run:
+                # Limit initial burst so we don't spam everything currently in cache
+                new_items = new_items[-10:]
+                first_run = False
+                
+            if new_items:
+                for item in new_items:
+                    seen_items.add(item)
+                    if stop_event is not None and stop_event.is_set():
+                        break
+                    callback(item, mode)
+                    time.sleep(interval)
+            else:
+                time.sleep(2.0)
         except Exception as e:
             time.sleep(2.0)
