@@ -16,6 +16,7 @@ from feature_extractor import (
 from email_parser import parse_email_content, parse_email_file
 from history_parser import get_browser_history
 from packet_sniffer import capture_packets, capture_packets_stream
+from integrations import check_virustotal, check_pwned_password, scan_imap_inbox
 import train_model
 
 app = Flask(__name__)
@@ -221,6 +222,7 @@ def analyze_url():
 
         shap_data = compute_shap_explanation(url_explainer, vec, URL_FEATURE_NAMES)
         geo_data = get_geo_metadata(url, round(proba * 100, 1))
+        vt_data = check_virustotal(url)
 
         return jsonify({
             'url': url,
@@ -232,7 +234,8 @@ def analyze_url():
             'feature_vector': vec,
             'risk_factors': risk_factors,
             'shap': shap_data,
-            'geo': geo_data
+            'geo': geo_data,
+            'virustotal': vt_data
         })
     except Exception as e:
         return jsonify({'error': f'URL analysis failed: {str(e)}'}), 500
@@ -718,6 +721,83 @@ def retrain():
         return jsonify({'status': 'Retraining successful', 'metrics': results})
     except Exception as e:
         return jsonify({'error': f'Retraining failed: {str(e)}'}), 500
+
+@app.route('/api/analyze/password', methods=['POST'])
+def analyze_password():
+    data = request.get_json() or {}
+    password = data.get('password', '')
+    if not password:
+        return jsonify({'error': 'No password provided'}), 400
+    
+    result = check_pwned_password(password)
+    return jsonify(result)
+
+@app.route('/api/analyze/imap', methods=['POST'])
+def analyze_imap():
+    data = request.get_json() or {}
+    email_addr = data.get('email', '').strip()
+    password = data.get('password', '').strip()
+    server = data.get('server', 'imap.gmail.com').strip()
+    port = data.get('port', 993)
+    limit = int(data.get('limit', 5))
+    
+    if not email_addr or not password:
+        return jsonify({'error': 'Email and App Password are required.'}), 400
+        
+    res = scan_imap_inbox(email_addr, password, server, port, limit)
+    if 'error' in res:
+        return jsonify(res), 500
+        
+    scored_emails = []
+    for raw_email in res.get('emails', []):
+        headers, body_text = parse_email_content(raw_email)
+        if not headers and not body_text:
+            continue
+            
+        try:
+            vec, feat_dict = extract_email_features(headers, body_text)
+            X = np.array([vec])
+            proba = float(email_model.predict_proba(X)[0][1])
+            
+            if proba >= 0.7:
+                risk_level = "High Risk"
+                color_class = "danger"
+            elif proba >= 0.35:
+                risk_level = "Suspicious"
+                color_class = "warning"
+            else:
+                risk_level = "Safe"
+                color_class = "success"
+                
+            threat_indicators = []
+            if feat_dict['from_return_mismatch']:
+                threat_indicators.append("Domain spoofing alert (From/Return-Path mismatch).")
+            if feat_dict['spf_status'] in ('FAIL', 'SOFTFAIL'):
+                threat_indicators.append("SPF authentication failed.")
+            if feat_dict['dkim_status'] == 'FAIL':
+                threat_indicators.append("DKIM verification failed.")
+            if feat_dict['has_suspicious_hops']:
+                threat_indicators.append("Suspicious email routing.")
+            if feat_dict['urgency_score'] > 2.0:
+                threat_indicators.append("High urgency NLP threat score.")
+            if feat_dict['executable_attachment']:
+                threat_indicators.append("Executable script attachments present.")
+            
+            scored_emails.append({
+                'subject': headers.get('Subject', 'No Subject'),
+                'from': headers.get('From', 'Unknown Sender'),
+                'date': headers.get('Date', 'Unknown Date'),
+                'probability': round(proba * 100, 1),
+                'risk_level': risk_level,
+                'color_class': color_class,
+                'threat_indicators': threat_indicators,
+                'features': feat_dict,
+                'shap': compute_shap_explanation(email_explainer, vec, EMAIL_FEATURE_NAMES)
+            })
+        except Exception as e:
+            continue
+            
+    return jsonify({'status': 'success', 'results': scored_emails})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)

@@ -22,7 +22,94 @@ document.addEventListener('DOMContentLoaded', () => {
     try { initTabs(); } catch (e) { console.warn("Tabs init error:", e); }
     try { initKeyboardShortcuts(); } catch (e) { console.warn("Shortcuts init error:", e); }
     try { initSidebarToggle(); } catch (e) { console.warn("Sidebar toggle init error:", e); }
+    try { initIntegrations(); } catch (e) { console.warn("Integrations init error:", e); }
 });
+
+function initIntegrations() {
+    const btnPassword = document.getElementById('btn-check-password');
+    if (btnPassword) {
+        btnPassword.addEventListener('click', async () => {
+            const pw = document.getElementById('pwned-password-input').value;
+            const resElem = document.getElementById('pwned-result');
+            resElem.innerHTML = "Checking...";
+            if (!pw) { resElem.innerHTML = "Please enter a password."; return; }
+            
+            try {
+                const response = await fetch('/api/analyze/password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    resElem.innerHTML = `<span class="text-neon-crimson">Error: ${data.error}</span>`;
+                } else if (data.found) {
+                    resElem.innerHTML = `<span class="text-neon-crimson flex items-center justify-center gap-2"><span class="material-symbols-outlined">warning</span> COMPROMISED! Seen ${data.count} times in data breaches.</span>`;
+                } else {
+                    resElem.innerHTML = `<span class="text-cyber-lime flex items-center justify-center gap-2"><span class="material-symbols-outlined">check_circle</span> SAFE. Not found in known breaches.</span>`;
+                }
+            } catch (err) {
+                resElem.innerHTML = `<span class="text-neon-crimson">Failed to reach engine.</span>`;
+            }
+        });
+    }
+
+    const btnImap = document.getElementById('btn-scan-imap');
+    if (btnImap) {
+        btnImap.addEventListener('click', async () => {
+            const email = document.getElementById('imap-email').value;
+            const password = document.getElementById('imap-password').value;
+            const server = document.getElementById('imap-server').value;
+            const limit = document.getElementById('imap-limit').value;
+            const resultsElem = document.getElementById('imap-results');
+            
+            if (!email || !password) { alert("Please provide email and app password."); return; }
+            
+            resultsElem.innerHTML = "<div class='text-on-surface-variant text-center mt-10'>Connecting securely to IMAP server...</div>";
+            btnImap.disabled = true;
+            btnImap.innerText = "Scanning...";
+            
+            try {
+                const response = await fetch('/api/analyze/imap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, server, limit })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    resultsElem.innerHTML = `<div class='text-neon-crimson text-center mt-10'>Error: ${data.error}</div>`;
+                } else {
+                    resultsElem.innerHTML = "";
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(res => {
+                            const threatStr = res.threat_indicators.map(t => `<div class="text-neon-crimson"><span class="material-symbols-outlined text-xs align-middle mr-1">warning</span> ${t}</div>`).join('');
+                            const card = document.createElement('div');
+                            card.className = "bg-surface-variant/30 p-4 rounded-lg border border-glass-stroke flex flex-col gap-2";
+                            card.innerHTML = `
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-on-surface truncate pr-4">${res.subject}</h4>
+                                    <span class="px-2 py-1 rounded text-xs font-bold text-background bg-${res.color_class === 'danger' ? 'neon-crimson' : (res.color_class === 'warning' ? 'warning-amber' : 'cyber-lime')}">${res.risk_level}</span>
+                                </div>
+                                <div class="text-on-surface-variant text-xs">From: ${res.from} | Date: ${res.date}</div>
+                                <div class="text-sm font-bold ${res.color_class === 'danger' ? 'text-neon-crimson' : (res.color_class === 'warning' ? 'text-warning-amber' : 'text-cyber-lime')} mt-2">Threat Score: ${res.probability}%</div>
+                                ${threatStr}
+                            `;
+                            resultsElem.appendChild(card);
+                        });
+                    } else {
+                        resultsElem.innerHTML = "<div class='text-on-surface-variant text-center mt-10'>No emails found or supported.</div>";
+                    }
+                }
+            } catch (err) {
+                resultsElem.innerHTML = `<div class='text-neon-crimson text-center mt-10'>Failed to scan: ${err}</div>`;
+            } finally {
+                btnImap.disabled = false;
+                btnImap.innerText = "Scan Inbox";
+            }
+        });
+    }
+}
+
 
 // --- Sidebar Toggle Logic ---
 function initSidebarToggle() {
@@ -61,23 +148,24 @@ function initSidebarToggle() {
 
 // --- Tab Logic ---
 function initTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
+    const tabs = document.querySelectorAll('.sidebar-link');
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
             e.preventDefault();
-            switchTab(tab.getAttribute('data-target'), tab);
+            switchTab(tab.getAttribute('data-tab'), tab);
         });
     });
 }
 
 function switchTab(targetId, tabElement = null) {
-    document.querySelectorAll('.tab-pane').forEach(pane => {
+    document.querySelectorAll('.tab-content').forEach(pane => {
         pane.classList.remove('block');
         pane.classList.add('hidden');
     });
     
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-surface-variant/50', 'text-cyber-lime', 'border-l-4', 'border-cyber-lime');
+    document.querySelectorAll('.sidebar-link').forEach(btn => {
+        btn.classList.remove('bg-cyber-lime/10', 'text-cyber-lime', 'font-bold');
+        btn.classList.add('text-on-surface-variant');
     });
 
     const target = document.getElementById(targetId);
@@ -87,24 +175,12 @@ function switchTab(targetId, tabElement = null) {
     }
     
     if (tabElement) {
-        tabElement.classList.add('bg-surface-variant/50', 'text-cyber-lime', 'border-l-4', 'border-cyber-lime');
-        const textElement = tabElement.querySelector('.font-label-caps');
-        if (textElement) {
-            document.getElementById('breadcrumb-current').innerText = textElement.innerText;
-        }
-    } else {
-        const matchingBtn = document.querySelector(`.tab-btn[data-target="${targetId}"]`);
-        if (matchingBtn) {
-            matchingBtn.classList.add('bg-surface-variant/50', 'text-cyber-lime', 'border-l-4', 'border-cyber-lime');
-            const textElement = matchingBtn.querySelector('.font-label-caps');
-            if (textElement) {
-                document.getElementById('breadcrumb-current').innerText = textElement.innerText;
-            }
-        }
+        tabElement.classList.add('bg-cyber-lime/10', 'text-cyber-lime', 'font-bold');
+        tabElement.classList.remove('text-on-surface-variant');
     }
     
     // Invalidate map size if dashboard is shown
-    if (targetId === 'pane-dashboard' && threatMapInstance) {
+    if (targetId === 'tab-dashboard' && threatMapInstance) {
         setTimeout(() => threatMapInstance.invalidateSize(), 100);
     }
 }
@@ -250,6 +326,19 @@ async function analyzeUrl() {
 
         if (data.shap) renderShapBars('url-shap-container', 'url-shap-bars', data.shap);
         if (data.geo) addGeoMarker(data.geo, data.url, data.probability, true);
+        
+        if (data.virustotal) {
+            const vtContainer = document.getElementById('vt-content');
+            if (vtContainer) {
+                if (data.virustotal.status === 'success') {
+                    const color = data.virustotal.positives > 0 ? 'text-neon-crimson' : 'text-cyber-lime';
+                    vtContainer.innerHTML = `<div class="text-xl ${color} font-bold mb-2">${data.virustotal.positives} / ${data.virustotal.total} flags</div><p>${data.virustotal.message}</p>`;
+                } else {
+                    vtContainer.innerHTML = `<p>${data.virustotal.message}</p>`;
+                }
+            }
+        }
+
         updateLiveCounters(data.probability >= 35);
 
         if (urlChartInstance) {

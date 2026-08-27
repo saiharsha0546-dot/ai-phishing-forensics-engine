@@ -10,6 +10,38 @@ from feature_extractor import URL_FEATURE_NAMES, EMAIL_FEATURE_NAMES, extract_ur
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
 URL_MODEL_PATH = os.path.join(MODELS_DIR, 'url_phishing_model.pkl')
 EMAIL_MODEL_PATH = os.path.join(MODELS_DIR, 'email_phishing_model.pkl')
+REAL_DATA_PATH = os.path.join(MODELS_DIR, 'real_phishing_data.csv')
+
+def load_real_url_dataset():
+    """Loads a real-world dataset from models/real_phishing_data.csv if available."""
+    if not os.path.exists(REAL_DATA_PATH):
+        return None
+        
+    print(f"Found real dataset at {REAL_DATA_PATH}! Extracting features from raw URLs...")
+    df_raw = pd.read_csv(REAL_DATA_PATH)
+    
+    # We expect columns like 'url' and 'label' (0 for legit, 1 for phishing)
+    if 'url' not in df_raw.columns or 'label' not in df_raw.columns:
+        print("Dataset missing 'url' or 'label' columns. Falling back to synthetic.")
+        return None
+        
+    X_data = []
+    y_data = []
+    
+    # Cap to a reasonable size so it doesn't take 3 hours to extract features locally
+    for idx, row in df_raw.head(3000).iterrows():
+        url = row['url']
+        label = int(row['label'])
+        try:
+            vec, _ = extract_url_features(url, timeout=0.05, skip_whois=True)
+            X_data.append(vec)
+            y_data.append(label)
+        except Exception:
+            pass
+            
+    df = pd.DataFrame(X_data, columns=URL_FEATURE_NAMES)
+    df['label'] = y_data
+    return df
 
 def generate_synthetic_url_dataset():
     """Generates a comprehensive, highly accurate dataset of realistic legitimate and phishing URLs."""
@@ -143,7 +175,10 @@ def train_all_models():
     """Trains and saves both URL and Email RandomForest phishing classifiers with high-precision hyperparameter tuning."""
     # 1. Train URL Model
     print("--- Training URL Phishing Classifier ---")
-    url_df = generate_synthetic_url_dataset()
+    url_df = load_real_url_dataset()
+    if url_df is None:
+        url_df = generate_synthetic_url_dataset()
+        
     X_url = url_df.drop('label', axis=1)
     y_url = url_df['label']
 

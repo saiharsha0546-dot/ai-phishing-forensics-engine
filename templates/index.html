@@ -143,32 +143,88 @@
 </div>
 </nav>
 
+<!-- TAB: IMAP INBOX SCANNER -->
+<div id="tab-imap" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
+<div class="flex items-center gap-4 mb-8">
+<span class="material-symbols-outlined text-4xl text-cyber-lime">inbox</span>
+<h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">IMAP Inbox Scanner</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-1 flex flex-col gap-6">
+<div class="glass-panel p-6">
+<h3 class="font-headline-sm font-bold uppercase text-on-surface-variant mb-4">Connect IMAP</h3>
+<div class="flex flex-col gap-4">
+<input type="text" id="imap-email" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="Email Address">
+<input type="password" id="imap-password" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="App Password">
+<input type="text" id="imap-server" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="IMAP Server (e.g. imap.gmail.com)" value="imap.gmail.com">
+<input type="number" id="imap-limit" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="Number of emails to fetch" value="5">
+<button id="btn-scan-imap" class="bg-cyber-lime text-background font-bold px-6 py-2 rounded hover:bg-opacity-80 transition-colors mt-2">Scan Inbox</button>
+</div>
+</div>
+</div>
+<div class="lg:col-span-2 flex flex-col gap-6">
+<div class="glass-panel p-6 h-full min-h-[400px]">
+<h3 class="font-headline-sm font-bold uppercase text-on-surface-variant mb-4">Inbox Threat Analysis</h3>
+<div id="imap-results" class="flex flex-col gap-4 overflow-y-auto max-h-[600px] font-code-sm text-sm">
+<div class="text-on-surface-variant text-center mt-10">Awaiting IMAP connection...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- TAB: DARK WEB SCANNER -->
+<div id="tab-darkweb" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
+<div class="flex items-center gap-4 mb-8">
+<span class="material-symbols-outlined text-4xl text-cyber-lime">password</span>
+<h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">Dark Web Password Scanner</h2>
+</div>
+<div class="glass-panel p-8 max-w-3xl mx-auto text-center">
+<p class="text-on-surface-variant mb-8">Enter a password to securely check if it has been exposed in a data breach using the HaveIBeenPwned k-Anonymity API. We never send your full password over the network.</p>
+<div class="flex gap-4">
+<input type="password" id="pwned-password-input" class="flex-1 bg-surface-variant/50 border border-glass-stroke text-on-surface px-6 py-4 rounded-lg focus:outline-none focus:border-cyber-lime font-code-sm text-lg" placeholder="Enter password to verify...">
+<button id="btn-check-password" class="bg-cyber-lime text-background font-bold px-8 py-4 rounded-lg hover:bg-opacity-80 transition-colors text-lg uppercase tracking-widest">Verify</button>
+</div>
+<div id="pwned-result" class="mt-8 font-headline-md min-h-[60px]"></div>
+</div>
+</div>
+
 <aside id="main-sidebar" class="h-screen w-64 fixed left-0 top-0 border-r border-glass-stroke bg-glass-fill dark:bg-glass-fill flex flex-col backdrop-blur-[24px] shadow-[0_0_15px_rgba(50,255,126,0.1)] z-50 transition-transform duration-300 transform">
 <div class="p-6 border-b border-glass-stroke flex flex-col gap-2">
 <h1 class="font-headline-md text-headline-md font-bold text-cyber-lime uppercase tracking-tighter">CYBER_OS v2.4</h1>
 <span class="font-code-sm text-code-sm text-on-surface-variant">SOC Node: Delta-9</span>
 </div>
 <nav class="flex-1 py-6 flex flex-col gap-1 overflow-y-auto" id="sidebar-nav">
-<a href="#" class="tab-btn flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 transition-all duration-200 active-tab-class" data-target="pane-dashboard">
+<div class="flex flex-col gap-1 mt-6">
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-cyber-lime bg-cyber-lime/10 font-bold transition-all" data-tab="tab-dashboard">
 <span class="material-symbols-outlined">dashboard</span>
-<span class="font-label-caps text-label-caps uppercase">Dashboard</span>
+<span>Dashboard</span>
 </a>
-<a href="#" class="tab-btn flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 transition-all duration-200" data-target="pane-url">
-<span class="material-symbols-outlined">security</span>
-<span class="font-label-caps text-label-caps uppercase">Threat Intelligence</span>
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-url">
+<span class="material-symbols-outlined">public</span>
+<span>Threat Intelligence</span>
 </a>
-<a href="#" class="tab-btn flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 transition-all duration-200" data-target="pane-email">
-<span class="material-symbols-outlined">terminal</span>
-<span class="font-label-caps text-label-caps uppercase">Endpoint Analysis</span>
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-email">
+<span class="material-symbols-outlined">mail</span>
+<span>Email Forensics</span>
 </a>
-<a href="#" class="tab-btn flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 transition-all duration-200" data-target="pane-network">
-<span class="material-symbols-outlined">hub</span>
-<span class="font-label-caps text-label-caps uppercase">Network Forensics</span>
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-imap">
+<span class="material-symbols-outlined">inbox</span>
+<span>IMAP Inbox Scan</span>
 </a>
-<a href="/api/report" target="_blank" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-variant/50 transition-all duration-200">
-<span class="material-symbols-outlined">assessment</span>
-<span class="font-label-caps text-label-caps uppercase">Report Center</span>
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-darkweb">
+<span class="material-symbols-outlined">password</span>
+<span>Dark Web Scanner</span>
 </a>
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-history">
+<span class="material-symbols-outlined">history</span>
+<span>Network History</span>
+</a>
+<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-sniffer">
+<span class="material-symbols-outlined">wifi_tethering</span>
+<span>Packet Sniffer</span>
+</a>
+</div>
 </nav>
 <div class="p-4 border-t border-glass-stroke">
 <button onclick="retrainModels()" id="btn-retrain" class="w-full bg-cyber-lime/10 text-cyber-lime border border-cyber-lime/50 hover:bg-cyber-lime hover:text-background font-label-caps text-label-caps py-2 rounded transition-all duration-200 uppercase tracking-widest flex items-center justify-center gap-2">
@@ -201,7 +257,7 @@
 <div class="absolute inset-0 z-[-1] opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 50% 0%, rgba(50, 255, 126, 0.1) 0%, transparent 70%);"></div>
 <div class="p-container-margin max-w-7xl mx-auto flex flex-col gap-container-margin">
 
-<div id="pane-dashboard" class="tab-pane block">
+<div id="tab-dashboard" class="tab-content block">
     <header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-glass-stroke pb-4 mb-4">
         <div>
         <h2 class="font-headline-lg text-headline-lg text-on-surface">Dual RandomForest Model Health</h2>
@@ -278,7 +334,7 @@
     </div>
 </div>
 
-<div id="pane-url" class="tab-pane hidden">
+<div id="tab-url" class="tab-content hidden">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
         <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
             <h5 class="font-headline-md text-headline-md text-on-surface mb-2">Real-Time URL Risk Scanner</h5>
@@ -328,8 +384,15 @@
                 </div>
                 
                 <div id="url-shap-container" class="hidden mb-4 p-4 bg-surface-container-highest border border-glass-stroke rounded">
-                    <span class="font-label-caps text-label-caps text-cyan block mb-2">SHAP Force Breakdown</span>
-                    <div id="url-shap-bars" class="flex flex-col gap-2 font-code-sm text-xs"></div>
+                    <div class="glass-panel p-6 flex flex-col gap-4">
+<h3 class="font-headline-sm font-bold uppercase tracking-widest text-on-surface-variant mb-2 border-b border-glass-stroke pb-2">VirusTotal Consensus</h3>
+<div id="vt-content" class="text-on-surface-variant">Waiting for analysis...</div>
+</div>
+
+<div class="glass-panel p-6 flex flex-col gap-4">
+<h3 class="font-headline-sm font-bold uppercase tracking-widest text-on-surface-variant mb-2 border-b border-glass-stroke pb-2">SHAP Threat Factors</h3>
+<div id="url-shap-bars" class="flex flex-col gap-3 font-code-sm"></div>
+</div>
                 </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3 font-code-sm text-xs mt-auto">
@@ -345,7 +408,7 @@
     </div>
 </div>
 
-<div id="pane-email" class="tab-pane hidden">
+<div id="tab-email" class="tab-content hidden">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
         <div class="lg:col-span-5 flex flex-col gap-gutter">
             <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
@@ -419,64 +482,84 @@
     </div>
 </div>
 
-<div id="pane-network" class="tab-pane hidden">
-    <div class="flex flex-col gap-gutter">
-        <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                    <h5 class="font-headline-md text-headline-md text-on-surface mb-1">Browser History Threat Hunter</h5>
-                    <p class="font-code-sm text-code-sm text-on-surface-variant">Captures live open tabs or scans local SQLite databases.</p>
-                </div>
-                <div class="flex gap-2 font-code-sm">
-                    <input type="text" id="history-search-input" class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-1" placeholder="Filter..." oninput="filterBrowserHistory()">
-                    <select id="history-browser-select" class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-1" onchange="loadBrowserHistory()">
-                        <option value="all">Auto (Live)</option>
-                        <option value="live_all">Live: Tabs + History</option>
-                        <option value="chrome">SQLite Scan: Chrome</option>
-                        <option value="edge">SQLite Scan: Edge</option>
-                    </select>
-                    <button onclick="sortHistoryByScore()" class="px-3 py-1 border border-glass-stroke rounded text-on-surface-variant hover:text-on-surface">Sort</button>
-                    <button onclick="loadBrowserHistory()" class="px-3 py-1 bg-cyber-lime text-background rounded">Scan</button>
-                </div>
+<!-- TAB: NETWORK HISTORY -->
+<div id="tab-history" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
+    <div class="flex items-center gap-4 mb-8">
+        <span class="material-symbols-outlined text-4xl text-cyber-lime">history</span>
+        <h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">Network History</h2>
+    </div>
+    <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h5 class="font-headline-md text-headline-md text-on-surface mb-1">Browser History Threat Hunter</h5>
+                <p class="font-code-sm text-code-sm text-on-surface-variant">Captures live open tabs or scans local SQLite databases.</p>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="font-label-caps text-label-caps text-on-surface-variant border-b border-glass-stroke">
-                        <tr><th class="p-2">Status</th><th class="p-2">Score</th><th class="p-2">URL</th><th class="p-2">Title</th><th class="p-2">Time</th><th class="p-2">Action</th></tr>
-                    </thead>
-                    <tbody id="history-table-body" class="font-code-sm text-code-sm">
-                        <tr><td colspan="6" class="p-4 text-center text-on-surface-variant">Click Scan to begin...</td></tr>
-                    </tbody>
-                </table>
+            <div class="flex gap-2 font-code-sm">
+                <input type="text" id="history-search-input" class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-1" placeholder="Filter..." oninput="filterBrowserHistory()">
+                <select id="history-browser-select" class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-1" onchange="loadBrowserHistory()">
+                    <option value="all">Auto (Live)</option>
+                    <option value="live_all">Live: Tabs + History</option>
+                    <option value="chrome">SQLite Scan: Chrome</option>
+                    <option value="edge">SQLite Scan: Edge</option>
+                </select>
+                <button onclick="sortHistoryByScore()" class="px-3 py-1 border border-glass-stroke rounded text-on-surface-variant hover:text-on-surface">Sort</button>
+                <button onclick="loadBrowserHistory()" class="px-3 py-1 bg-cyber-lime text-background rounded font-bold">Scan</button>
             </div>
         </div>
-        
-        <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div>
-                    <h5 class="font-headline-md text-headline-md text-on-surface mb-1">Live Packet Sniffer</h5>
-                    <p class="font-code-sm text-code-sm text-on-surface-variant mb-4">Real-time DNS & HTTP capture via Tshark/fallback.</p>
-                    <select id="sniffer-timeout" class="w-full bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-2 font-code-sm mb-4">
+        <div class="overflow-x-auto min-h-[400px]">
+            <table class="w-full text-left border-collapse">
+                <thead class="font-label-caps text-label-caps text-on-surface-variant border-b border-glass-stroke">
+                    <tr><th class="p-2">Status</th><th class="p-2">Score</th><th class="p-2">URL</th><th class="p-2">Title</th><th class="p-2">Time</th><th class="p-2">Action</th></tr>
+                </thead>
+                <tbody id="history-table-body" class="font-code-sm text-code-sm">
+                    <tr><td colspan="6" class="p-4 text-center text-on-surface-variant mt-10">Click Scan to begin...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: PACKET SNIFFER -->
+<div id="tab-sniffer" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
+    <div class="flex items-center gap-4 mb-8">
+        <span class="material-symbols-outlined text-4xl text-cyber-lime">wifi_tethering</span>
+        <h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">Live Packet Sniffer</h2>
+    </div>
+    <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg flex flex-col gap-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <p class="font-code-sm text-code-sm text-on-surface-variant mb-4">Real-time DNS & HTTP capture via Tshark/fallback.</p>
+                <div class="flex gap-4 items-center">
+                    <select id="sniffer-timeout" class="w-48 bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-2 font-code-sm">
                         <option value="4">4 Seconds</option>
                         <option value="8" selected>8 Seconds</option>
                         <option value="15">15 Seconds</option>
                     </select>
-                    <button id="btn-start-sniff" onclick="startPacketCapture()" class="w-full bg-surface-tint text-background font-label-caps px-4 py-3 rounded mb-3 tracking-wider">START BATCH CAPTURE</button>
-                    <button id="btn-stream-sniff" onclick="toggleWebSocketStream()" class="w-full border border-neon-crimson text-neon-crimson font-label-caps px-4 py-3 rounded tracking-wider hover:bg-neon-crimson/10 transition-colors">START WEBSOCKET STREAM</button>
-                    <div class="mt-4 p-3 bg-surface-container-highest border border-glass-stroke rounded font-code-sm text-xs text-on-surface-variant" id="sniffer-mode-text">Ready to capture...</div>
+                    <button id="btn-start-sniff" onclick="startPacketCapture()" class="bg-cyber-lime text-background font-label-caps px-6 py-2 rounded font-bold tracking-wider hover:bg-opacity-80 transition-colors">START BATCH CAPTURE</button>
+                    <button id="btn-stream-sniff" onclick="toggleWebSocketStream()" class="border border-neon-crimson text-neon-crimson font-label-caps px-6 py-2 rounded font-bold tracking-wider hover:bg-neon-crimson/10 transition-colors">START WEBSOCKET STREAM</button>
                 </div>
-                <div class="lg:col-span-2 flex flex-col">
-                    <div class="mb-4" style="height: 180px;"><canvas id="snifferTimelineChart"></canvas></div>
-                    <div class="flex-1 overflow-y-auto max-h-[250px]">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="font-label-caps text-label-caps text-on-surface-variant border-b border-glass-stroke">
-                                <tr><th class="p-2">Flag</th><th class="p-2">Score</th><th class="p-2">URI</th><th class="p-2">Analyze</th></tr>
-                            </thead>
-                            <tbody id="sniffer-table-body" class="font-code-sm text-code-sm">
-                                <tr><td colspan="4" class="p-4 text-center text-on-surface-variant">Awaiting packets...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+            </div>
+            <div class="p-3 bg-surface-container-highest border border-glass-stroke rounded font-code-sm text-sm text-on-surface-variant min-w-[300px] text-center" id="sniffer-mode-text">
+                Ready to capture...
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
+            <div class="flex flex-col bg-surface-variant/30 border border-glass-stroke rounded p-4">
+                <h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4">Live Telemetry</h3>
+                <div class="flex-1 w-full" style="min-height: 250px;"><canvas id="snifferTimelineChart"></canvas></div>
+            </div>
+            <div class="flex flex-col bg-surface-variant/30 border border-glass-stroke rounded p-4">
+                <h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4">Intercepted Packets</h3>
+                <div class="flex-1 overflow-y-auto max-h-[500px]">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="font-label-caps text-label-caps text-on-surface-variant border-b border-glass-stroke">
+                            <tr><th class="p-2">Flag</th><th class="p-2">Score</th><th class="p-2">URI</th><th class="p-2">Analyze</th></tr>
+                        </thead>
+                        <tbody id="sniffer-table-body" class="font-code-sm text-code-sm">
+                            <tr><td colspan="4" class="p-4 text-center text-on-surface-variant mt-10">Awaiting packets...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
