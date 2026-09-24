@@ -1,604 +1,358 @@
-<!DOCTYPE html><html class="dark" lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Threat Intelligence &amp; Model Training Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com" rel="preconnect">
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phishing Forensics Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "on-primary": "#003915",
-                      "surface": "#0c160d",
-                      "on-primary-fixed-variant": "#005322",
-                      "charcoal-grey": "#1A1A1C",
-                      "inverse-surface": "#dbe6d7",
-                      "surface-dim": "#0c160d",
-                      "glass-fill": "rgba(10, 10, 11, 0.7)",
-                      "background": "#0c160d",
-                      "primary-container": "#32ff7e",
-                      "surface-container-highest": "#2d372d",
-                      "primary": "#f3fff0",
-                      "on-tertiary": "#3e2e00",
-                      "secondary-fixed": "#e5e2e3",
-                      "cyber-lime": "#32FF7E",
-                      "secondary": "#c8c6c7",
-                      "surface-container-lowest": "#071008",
-                      "tertiary-fixed-dim": "#e5c36f",
-                      "inverse-primary": "#006d2f",
-                      "surface-container-low": "#141e15",
-                      "surface-container": "#182219",
-                      "on-surface-variant": "#bacbb8",
-                      "inverse-on-surface": "#293329",
-                      "on-secondary-fixed": "#1c1b1c",
-                      "on-primary-fixed": "#00210a",
-                      "surface-variant": "#2d372d",
-                      "on-tertiary-container": "#795f14",
-                      "secondary-container": "#4a494a",
-                      "secondary-fixed-dim": "#c8c6c7",
-                      "warning-amber": "#FF9F1A",
-                      "tertiary-fixed": "#ffdf95",
-                      "surface-tint": "#00e46b",
-                      "surface-container-high": "#232c23",
-                      "primary-fixed": "#66ff8f",
-                      "on-error-container": "#ffdad6",
-                      "outline": "#849583",
-                      "glass-stroke": "rgba(255, 255, 255, 0.12)",
-                      "tertiary-container": "#ffdb85",
-                      "on-primary-container": "#007232",
-                      "tertiary": "#fffbf9",
-                      "on-secondary-container": "#bab8b9",
-                      "error-container": "#93000a",
-                      "error": "#ffb4ab",
-                      "neon-crimson": "#FF3F34",
-                      "on-background": "#dbe6d7",
-                      "on-secondary": "#313031",
-                      "on-tertiary-fixed": "#251a00",
-                      "outline-variant": "#3b4b3c",
-                      "on-secondary-fixed-variant": "#474647",
-                      "on-tertiary-fixed-variant": "#594400",
-                      "on-error": "#690005",
-                      "on-surface": "#dbe6d7",
-                      "surface-bright": "#323c32",
-                      "primary-fixed-dim": "#00e46b"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.125rem",
-                      "lg": "0.25rem",
-                      "xl": "0.5rem",
-                      "full": "0.75rem"
-              },
-              "spacing": {
-                      "component-gap": "12px",
-                      "gutter": "16px",
-                      "container-margin": "24px",
-                      "base": "8px"
-              },
-              "fontFamily": {
-                      "body-md": [ "Inter" ],
-                      "headline-lg": [ "Inter" ],
-                      "data-display": [ "JetBrains Mono" ],
-                      "label-caps": [ "Inter" ],
-                      "headline-md": [ "Inter" ],
-                      "code-sm": [ "JetBrains Mono" ]
-              },
-              "fontSize": {
-                      "body-md": [ "16px", { "lineHeight": "1.6", "fontWeight": "400" } ],
-                      "headline-lg": [ "32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" } ],
-                      "data-display": [ "14px", { "lineHeight": "1.4", "fontWeight": "500" } ],
-                      "label-caps": [ "11px", { "lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "700" } ],
-                      "headline-md": [ "24px", { "lineHeight": "1.3", "fontWeight": "600" } ],
-                      "code-sm": [ "12px", { "lineHeight": "1.5", "fontWeight": "400" } ]
-              }
-            }
-          }
-        }
-</script>
-<style>
-/* Fix Leaflet map tile rendering with Tailwind */
-.leaflet-container img { max-width: none !important; }
-</style>
+<link rel="stylesheet" href="/static/css/app.css?v=3">
 </head>
-<body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-cyber-lime selection:text-background">
+<body>
 
-<nav id="top-navbar" class="fixed top-0 right-0 left-0 h-16 border-b border-glass-stroke bg-glass-fill dark:bg-glass-fill flex justify-between items-center px-gutter w-full z-50 glass-panel transition-all duration-300">
-<div class="flex items-center gap-4">
-<button id="sidebar-toggle" class="text-on-surface-variant hover:text-cyber-lime transition-colors">
-<span class="material-symbols-outlined text-2xl">menu</span>
-</button>
-<span class="font-headline-md text-headline-md font-black text-on-surface tracking-widest uppercase">FORENSIC_ENGINE</span>
-</div>
-<div class="flex items-center gap-6">
-<div class="relative hidden md:block">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
-<input class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface pl-9 pr-4 py-1.5 focus:outline-none focus:border-cyber-lime text-code-sm font-code-sm w-64 transition-colors" placeholder="Search parameters..." type="text">
-</div>
-<div class="flex items-center gap-4 text-cyber-lime dark:text-cyber-lime">
-<span class="material-symbols-outlined hover:glow-sm cursor-pointer transition-colors hover:text-white" data-weight="fill" onclick="runPresentationDemo()">settings_suggest</span>
-<div class="flex items-center gap-2 pl-4 border-l border-glass-stroke cursor-pointer group">
-<span class="font-label-caps text-label-caps text-on-surface group-hover:text-cyber-lime transition-colors">Investigator</span>
-<span class="material-symbols-outlined text-2xl group-hover:text-cyber-lime transition-colors" data-weight="fill">account_circle</span>
-</div>
-</div>
-</div>
-</nav>
-
-<aside id="main-sidebar" class="h-screen w-64 fixed left-0 top-0 border-r border-glass-stroke bg-glass-fill dark:bg-glass-fill flex flex-col backdrop-blur-[24px] shadow-[0_0_15px_rgba(50,255,126,0.1)] z-50 transition-transform duration-300 transform -translate-x-full">
-<div class="p-6 border-b border-glass-stroke flex flex-col gap-2">
-<h1 class="font-headline-md text-headline-md font-bold text-cyber-lime uppercase tracking-tighter">CYBER_OS v2.4</h1>
-<span class="font-code-sm text-code-sm text-on-surface-variant">SOC Node: Delta-9</span>
-</div>
-<nav class="flex-1 py-6 flex flex-col gap-1 overflow-y-auto" id="sidebar-nav">
-<div class="flex flex-col gap-1 mt-6">
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-cyber-lime bg-cyber-lime/10 font-bold transition-all" data-tab="tab-dashboard">
-<span class="material-symbols-outlined">dashboard</span>
-<span>Dashboard</span>
-</a>
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-url">
-<span class="material-symbols-outlined">public</span>
-<span>Threat Intelligence</span>
-</a>
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-email">
-<span class="material-symbols-outlined">mail</span>
-<span>Email Forensics</span>
-</a>
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-imap">
-<span class="material-symbols-outlined">inbox</span>
-<span>IMAP Inbox Scan</span>
-</a>
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-darkweb">
-<span class="material-symbols-outlined">password</span>
-<span>Dark Web Scanner</span>
-</a>
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-history">
-<span class="material-symbols-outlined">history</span>
-<span>Network History</span>
-</a>
-<a href="#" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all" data-tab="tab-sniffer">
-<span class="material-symbols-outlined">wifi_tethering</span>
-<span>Packet Sniffer</span>
-</a>
-</div>
-</nav>
-<div class="p-4 border-t border-glass-stroke">
-<button onclick="retrainModels()" id="btn-retrain" class="w-full bg-cyber-lime/10 text-cyber-lime border border-cyber-lime/50 hover:bg-cyber-lime hover:text-background font-label-caps text-label-caps py-2 rounded transition-all duration-200 uppercase tracking-widest flex items-center justify-center gap-2">
-<span class="material-symbols-outlined text-sm">model_training</span>
-    Retrain Models
-</button>
-</div>
-<div class="mt-auto border-t border-glass-stroke bg-surface-container-lowest">
-<div class="flex flex-col gap-1 p-2">
-<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-cyber-lime transition-colors cursor-pointer text-xs" onclick="showSystemDiagnostics()">
-<span class="material-symbols-outlined text-sm">memory</span>
-<span class="font-label-caps text-label-caps">System Health</span>
-</div>
-<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-cyber-lime transition-colors cursor-pointer text-xs">
-<span class="material-symbols-outlined text-sm">analytics</span>
-<span id="ext-status-pill" class="font-label-caps text-label-caps">Checking Extension...</span>
-</div>
-</div>
-</div>
-</aside>
-
-<main id="main-content" class="ml-0 min-w-0 overflow-x-clip pt-16 pb-8 min-h-screen bg-background relative z-0 transition-all duration-300">
-<nav class="sticky top-16 z-30 bg-background/80 backdrop-blur-md border-b border-glass-stroke px-container-margin py-3">
-  <div class="max-w-7xl mx-auto flex items-center gap-2 font-code-sm text-xs text-on-surface-variant">
-    <span class="hover:text-cyber-lime cursor-pointer">Home</span>
-    <span class="material-symbols-outlined text-xs">chevron_right</span>
-    <span class="text-cyber-lime" id="breadcrumb-current">Dashboard</span>
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-mark"><span class="ms">shield</span></div>
+    <div>
+      <div class="brand-name">Phishing Forensics</div>
+      <div class="brand-sub">Threat analysis workbench</div>
+    </div>
   </div>
-</nav>
-<div class="absolute inset-0 z-[-1] opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 50% 0%, rgba(50, 255, 126, 0.1) 0%, transparent 70%);"></div>
-<div class="p-container-margin max-w-7xl mx-auto flex flex-col gap-container-margin">
+  <nav class="nav">
+    <button class="nav-link active" data-page="overview"><span class="ms">space_dashboard</span>Overview</button>
+    <div class="nav-group">Analyze</div>
+    <button class="nav-link" data-page="url"><span class="ms">link</span>URL scanner</button>
+    <button class="nav-link" data-page="email"><span class="ms">mail</span>Email analyzer</button>
+    <button class="nav-link" data-page="inbox"><span class="ms">inbox</span>Inbox scan</button>
+    <div class="nav-group">Monitor</div>
+    <button class="nav-link" data-page="history"><span class="ms">history</span>Browser history</button>
+    <button class="nav-link" data-page="network"><span class="ms">lan</span>Network monitor</button>
+    <div class="nav-group">Identity</div>
+    <button class="nav-link" data-page="password"><span class="ms">key</span>Password breach check</button>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="ext-status"><span class="dot" id="ext-dot"></span><span id="ext-status">Checking browser extension…</span></div>
+    <button class="btn btn-ghost btn-sm" id="btn-retrain" style="justify-content:flex-start"><span class="ms sm">model_training</span>Retrain models</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
 
-<div id="tab-dashboard" class="tab-content block">
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-glass-stroke pb-4 mb-4">
-        <div>
-        <h2 class="font-headline-lg text-headline-lg text-on-surface">Dual RandomForest Model Health</h2>
-        <p class="font-code-sm text-code-sm text-on-surface-variant mt-2">SYS_ID: RF-EN-992 // STATUS: ACTIVE_TRAINING</p>
-        </div>
-        <div class="flex gap-4">
-        <div class="bg-surface-container-highest border border-glass-stroke p-3 flex flex-col items-end min-w-[120px] rounded-lg">
-        <span class="font-label-caps text-label-caps text-on-surface-variant">Epoch</span>
-        <span class="font-data-display text-data-display text-cyber-lime">1,402 / 5,000</span>
-        </div>
-        </div>
-    </header>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        <!-- KPI Cards Bento -->
-        <div class="lg:col-span-8 flex flex-col gap-gutter">
-            <section class="bg-surface-container-lowest/50 border border-glass-stroke/30 p-4 rounded-lg">
-                <h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4 px-2">Global Performance Metrics</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-                <div class="bg-glass-fill border border-glass-stroke rounded-lg p-4 relative overflow-hidden group hover:border-cyber-lime/50 transition-colors">
-                    <span class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Accuracy (Global)</span>
-                    <div class="flex items-baseline gap-2">
-                    <span class="font-headline-lg text-headline-lg text-on-surface" id="stat-url-acc">100.0</span>
-                    <span class="font-code-sm text-code-sm text-cyber-lime">%</span>
-                    </div>
-                </div>
-                <div class="bg-glass-fill border border-glass-stroke rounded-lg p-4 relative overflow-hidden group hover:border-cyber-lime/50 transition-colors">
-                    <span class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Accuracy (Email)</span>
-                    <div class="flex items-baseline gap-2">
-                    <span class="font-headline-lg text-headline-lg text-on-surface" id="stat-email-acc">100.0</span>
-                    <span class="font-code-sm text-code-sm text-warning-amber">%</span>
-                    </div>
-                </div>
-                <div class="bg-glass-fill border border-glass-stroke rounded-lg p-4 relative overflow-hidden group hover:border-cyber-lime/50 transition-colors">
-                    <span class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Threats Intercepted</span>
-                    <div class="flex items-baseline gap-2">
-                    <span class="font-headline-lg text-headline-lg text-on-surface" id="stat-threats-count">142</span>
-                    </div>
-                </div>
-                </div>
-            </section>
-            <!-- Threat Map -->
-            <div class="bg-glass-fill border border-glass-stroke p-4 rounded-lg flex flex-col">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-label-caps text-label-caps text-cyber-lime">GEO-IP THREAT ORIGIN HEATMAP</h3>
-                </div>
-                <div id="threatMap" class="w-full border border-glass-stroke rounded" style="height: 320px; background: #0c160d;"></div>
-            </div>
-        </div>
-        
-        <!-- Right Column: Feed -->
-        <div class="lg:col-span-4 flex flex-col gap-gutter">
-            <div class="bg-glass-fill border border-glass-stroke flex flex-col flex-1 overflow-hidden rounded-lg">
-                <div class="p-4 border-b border-glass-stroke flex justify-between items-center bg-surface-container-highest">
-                    <h3 class="font-label-caps text-label-caps text-on-surface">Live Network Stream</h3>
-                    <span class="font-code-sm text-code-sm text-neon-crimson animate-pulse flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 bg-neon-crimson rounded-full inline-block"></span> LIVE
-                    </span>
-                </div>
-                <div class="p-3 border-b border-glass-stroke/30 flex justify-around bg-surface-container-low font-code-sm text-xs">
-                    <div class="text-center"><span class="text-on-surface-variant block">Threats</span><span id="live-threats-counter" class="text-neon-crimson font-bold">0</span></div>
-                    <div class="text-center"><span class="text-on-surface-variant block">Safe</span><span id="live-safe-counter" class="text-cyber-lime font-bold">0</span></div>
-                    <div class="text-center"><span class="text-on-surface-variant block">Total</span><span id="live-total-counter" class="text-on-surface font-bold">0</span></div>
-                </div>
-                <div class="flex-1 overflow-y-auto max-h-[400px]">
-                    <table class="w-full text-left border-collapse">
-                        <tbody id="sniffer-table-body-dash" class="font-code-sm text-code-sm">
-                            <!-- Populated by JS -->
-                            <tr><td colspan="4" class="p-4 text-center text-on-surface-variant">Awaiting network events...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="main">
+  <header class="topbar">
+    <button class="btn btn-ghost icon-btn menu-btn" id="menu-btn" aria-label="Open menu"><span class="ms">menu</span></button>
+    <h1 id="page-title">Overview</h1>
+    <a class="btn btn-sm hide-sm" href="/api/report" target="_blank" rel="noopener"><span class="ms sm">description</span>Export report</a>
+  </header>
 
-<div id="tab-url" class="tab-content hidden">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
-        <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
-            <h5 class="font-headline-md text-headline-md text-on-surface mb-2">Real-Time URL Risk Scanner</h5>
-            <p class="font-code-sm text-code-sm text-on-surface-variant mb-6">Analyze URL structure, WHOIS age, entropy, and keyword vectors via RandomForest.</p>
-            
-            <div class="flex flex-col sm:flex-row gap-2 mb-6">
-                <input type="text" id="url-input" class="flex-1 bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-4 py-2 focus:outline-none focus:border-cyber-lime font-code-sm" placeholder="https://secure-update-verify.com" onkeypress="if(event.key==='Enter') analyzeUrl()">
-                <button onclick="analyzeUrl()" class="bg-cyber-lime text-background font-label-caps text-label-caps px-6 py-2 rounded hover:bg-primary-fixed transition-colors tracking-widest">ANALYZE</button>
-            </div>
-            
-            <div class="mb-6">
-                <span class="font-label-caps text-label-caps text-on-surface-variant block mb-3">Quick Presets:</span>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="setAndAnalyzeUrl('http://secure-update-paypal-verify.login-bank.ru/signin.php')" class="border border-neon-crimson text-neon-crimson px-3 py-1 rounded font-code-sm text-xs hover:bg-neon-crimson/10">PayPal Phish</button>
-                    <button onclick="setAndAnalyzeUrl('http://185.220.101.42/payload/agent_update.exe')" class="border border-neon-crimson text-neon-crimson px-3 py-1 rounded font-code-sm text-xs hover:bg-neon-crimson/10">IP Payload</button>
-                    <button onclick="setAndAnalyzeUrl('https://www.github.com/torvalds/linux')" class="border border-cyber-lime text-cyber-lime px-3 py-1 rounded font-code-sm text-xs hover:bg-cyber-lime/10">GitHub</button>
-                </div>
-            </div>
-            
-            <div class="pt-4 border-t border-glass-stroke/50">
-                <span class="font-label-caps text-label-caps text-on-surface-variant block mb-3">Model Feature Contributions</span>
-                <div style="height: 200px;"><canvas id="urlFeatureChart"></canvas></div>
-            </div>
-        </div>
-        
-        <div id="url-result-box" class="bg-glass-fill border border-glass-stroke p-6 rounded-lg flex flex-col justify-center min-h-[400px] transition-all duration-300">
-            <div id="url-empty-state" class="text-center">
-                <span class="material-symbols-outlined text-6xl text-surface-variant mb-4">radar</span>
-                <h5 class="font-headline-md text-headline-md text-on-surface-variant">Awaiting Target URL</h5>
-            </div>
-            
-            <div id="url-report-content" class="hidden flex flex-col h-full">
-                <div class="flex justify-between items-start border-b border-glass-stroke/50 pb-4 mb-4">
-                    <div>
-                        <span id="url-risk-badge" class="px-3 py-1 rounded font-label-caps text-label-caps bg-error-container text-neon-crimson border border-error/20">HIGH RISK</span>
-                        <h4 id="url-display-target" class="mt-3 font-code-sm text-on-surface break-all">http://target.url</h4>
-                    </div>
-                    <div class="text-right">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant block">Score</span>
-                        <span id="url-prob-score" class="font-headline-lg text-headline-lg text-neon-crimson">88.5%</span>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <span class="font-label-caps text-label-caps text-cyber-lime block mb-2">Threat Factors</span>
-                    <ul id="url-risk-factors-list" class="flex flex-col gap-2 font-code-sm text-sm text-on-surface-variant"></ul>
-                </div>
-                
-                <div id="url-shap-container" class="hidden mb-4 p-4 bg-surface-container-highest border border-glass-stroke rounded">
-                    <div class="glass-panel p-6 flex flex-col gap-4">
-<h3 class="font-headline-sm font-bold uppercase tracking-widest text-on-surface-variant mb-2 border-b border-glass-stroke pb-2">VirusTotal Consensus</h3>
-<div id="vt-content" class="text-on-surface-variant">Waiting for analysis...</div>
-</div>
+  <main class="content">
 
-<div class="glass-panel p-6 flex flex-col gap-4">
-<h3 class="font-headline-sm font-bold uppercase tracking-widest text-on-surface-variant mb-2 border-b border-glass-stroke pb-2">SHAP Threat Factors</h3>
-<div id="url-shap-bars" class="flex flex-col gap-3 font-code-sm"></div>
-</div>
-                </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 font-code-sm text-xs mt-auto">
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Domain Age</span><span id="url-feat-age" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Contains IP?</span><span id="url-feat-ip" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Subdomains</span><span id="url-feat-sub" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Entropy</span><span id="url-feat-entropy" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Keywords</span><span id="url-feat-kw" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">HTTPS</span><span id="url-feat-https" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Latitude</span><span id="url-feat-lat" class="text-on-surface"></span></div>
-                    <div class="p-2 bg-surface-container-highest border border-glass-stroke rounded"><span class="text-on-surface-variant block">Longitude</span><span id="url-feat-lon" class="text-on-surface"></span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <!-- ===== OVERVIEW ===== -->
+    <section class="page" id="page-overview">
+      <div class="page-head">
+        <h2>Overview</h2>
+        <p>Everything you've scanned in this session. Numbers reset when you reload the page.</p>
+      </div>
 
-<div id="tab-email" class="tab-content hidden">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        <div class="lg:col-span-5 flex flex-col gap-gutter">
-            <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
-                <h5 class="font-headline-md text-headline-md text-on-surface mb-2">Email (.eml) Analyzer</h5>
-                <p class="font-code-sm text-code-sm text-on-surface-variant mb-6">Inspect SPF/DKIM, routing hops, and NLP body urgency.</p>
-                
-                <div onclick="document.getElementById('eml-file-input').click()" class="border-2 border-dashed border-glass-stroke hover:border-cyber-lime/50 transition-colors p-8 rounded flex flex-col items-center justify-center text-center cursor-pointer mb-6 bg-surface-container-lowest">
-                    <input type="file" id="eml-file-input" class="hidden" accept=".eml,.txt" onchange="handleFileUpload(this.files)">
-                    <span class="material-symbols-outlined text-4xl text-cyber-lime mb-2">upload_file</span>
-                    <span class="font-headline-md text-headline-md text-on-surface text-sm mb-1">Drag & Drop .eml</span>
-                    <span class="font-code-sm text-code-sm text-on-surface-variant text-xs">Or click to browse</span>
-                </div>
-                
-                <span class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Sample Emails:</span>
-                <div id="sample-emails-list" class="flex flex-col gap-2 font-code-sm text-sm">
-                    <span class="text-on-surface-variant">Loading samples...</span>
-                </div>
-            </div>
+      <div class="card quickscan">
+        <h3>Quick URL scan</h3>
+        <p>Paste a link to check it for phishing signals.</p>
+        <form class="input-row" id="quick-form">
+          <input class="input input-lg mono" id="quick-url" placeholder="https://example.com/login" autocomplete="off">
+          <button class="btn btn-primary" style="height:44px" type="submit"><span class="ms sm">search</span>Scan URL</button>
+        </form>
+        <div class="shortcuts">
+          <button class="shortcut" data-goto="email"><span class="ms">mail</span>Analyze an email</button>
+          <button class="shortcut" data-goto="inbox"><span class="ms">inbox</span>Scan an inbox</button>
+          <button class="shortcut" data-goto="history"><span class="ms">history</span>Check browser history</button>
+          <button class="shortcut" data-goto="password"><span class="ms">key</span>Check a password</button>
         </div>
-        
-        <div class="lg:col-span-7 bg-glass-fill border border-glass-stroke p-6 rounded-lg flex flex-col min-h-[400px]">
-            <div id="email-empty-state" class="text-center my-auto">
-                <span class="material-symbols-outlined text-6xl text-surface-variant mb-4">mail</span>
-                <h5 class="font-headline-md text-headline-md text-on-surface-variant">No Email Loaded</h5>
-            </div>
-            
-            <div id="email-report-content" class="hidden flex flex-col h-full">
-                <div class="flex justify-between items-start border-b border-glass-stroke/50 pb-4 mb-4">
-                    <div>
-                        <span id="email-risk-badge" class="px-3 py-1 rounded font-label-caps text-label-caps bg-error-container text-neon-crimson border border-error/20">HIGH RISK</span>
-                        <h4 id="email-display-name" class="mt-3 font-code-sm text-on-surface font-bold">file.eml</h4>
-                    </div>
-                    <div class="text-right">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant block">Score</span>
-                        <span id="email-prob-score" class="font-headline-lg text-headline-lg text-neon-crimson">94.2%</span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-wrap gap-2 mb-4 font-code-sm text-xs">
-                    <div class="px-3 py-2 border border-glass-stroke rounded bg-surface-container-highest flex gap-2"><span class="text-on-surface-variant">SPF:</span><span id="badge-spf" class="font-bold"></span></div>
-                    <div class="px-3 py-2 border border-glass-stroke rounded bg-surface-container-highest flex gap-2"><span class="text-on-surface-variant">DKIM:</span><span id="badge-dkim" class="font-bold"></span></div>
-                    <div class="px-3 py-2 border border-glass-stroke rounded bg-surface-container-highest flex gap-2"><span class="text-on-surface-variant">HOPS:</span><span id="badge-hops" class="text-cyber-lime font-bold"></span></div>
-                    <div class="px-3 py-2 border border-glass-stroke rounded bg-surface-container-highest flex gap-2"><span class="text-on-surface-variant">URGENCY:</span><span id="badge-urgency" class="text-warning-amber font-bold"></span></div>
-                </div>
-                
-                <table class="w-full text-left font-code-sm text-xs border-collapse mb-4">
-                    <tbody>
-                        <tr class="border-b border-glass-stroke/30"><td class="p-2 text-on-surface-variant">From</td><td id="tbl-from" class="p-2 text-on-surface"></td></tr>
-                        <tr class="border-b border-glass-stroke/30"><td class="p-2 text-on-surface-variant">Return-Path</td><td id="tbl-return" class="p-2 text-warning-amber"></td></tr>
-                        <tr class="border-b border-glass-stroke/30"><td class="p-2 text-on-surface-variant">Subject</td><td id="tbl-subject" class="p-2 text-on-surface font-bold"></td></tr>
-                        <tr class="border-b border-glass-stroke/30"><td class="p-2 text-on-surface-variant">IPs Found</td><td id="tbl-ips" class="p-2 text-on-surface"></td></tr>
-                    </tbody>
-                </table>
-                
-                <div class="mb-4">
-                    <span class="font-label-caps text-label-caps text-neon-crimson block mb-2">Threat Indicators</span>
-                    <ul id="email-threat-list" class="flex flex-col gap-1 font-code-sm text-xs text-on-surface-variant"></ul>
-                </div>
-                
-                <div id="email-shap-container" class="hidden mb-4 p-4 bg-surface-container-highest border border-glass-stroke rounded">
-                    <span class="font-label-caps text-label-caps text-cyan block mb-2">SHAP Force Breakdown</span>
-                    <div id="email-shap-bars" class="flex flex-col gap-2 font-code-sm text-xs"></div>
-                </div>
-                
-                <div class="mt-auto">
-                    <span class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Body Extract</span>
-                    <div id="email-body-preview" class="p-3 bg-surface-container-lowest border border-glass-stroke rounded font-code-sm text-xs text-on-surface-variant max-h-32 overflow-auto"></div>
-                </div>
-            </div>
+      </div>
+
+      <div class="grid g-4" style="margin-top:16px">
+        <div class="card stat"><div class="stat-label"><span class="ms sm">fact_check</span>Items scanned</div><div class="stat-value" id="stat-total">0</div></div>
+        <div class="card stat"><div class="stat-label"><span class="ms sm t-high">gpp_bad</span>High risk</div><div class="stat-value" id="stat-high">0</div></div>
+        <div class="card stat"><div class="stat-label"><span class="ms sm t-warn">warning</span>Suspicious</div><div class="stat-value" id="stat-warn">0</div></div>
+        <div class="card stat"><div class="stat-label"><span class="ms sm t-safe">verified_user</span>Safe</div><div class="stat-value" id="stat-safe">0</div></div>
+      </div>
+
+      <div class="grid g-dash" style="margin-top:16px">
+        <div class="stack">
+          <div class="card">
+            <div class="card-head"><h3>Recent activity</h3><span class="sub" id="feed-count">No scans yet</span></div>
+            <ul class="feed" id="activity-feed"></ul>
+            <div class="empty" id="feed-empty"><span class="ms">inventory_2</span><h4>Nothing scanned yet</h4><p>Run a scan and results will show up here.</p></div>
+          </div>
         </div>
-    </div>
-</div>
-
-<!-- TAB: IMAP INBOX SCANNER -->
-<div id="tab-imap" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
-<div class="flex items-center gap-4 mb-8">
-<span class="material-symbols-outlined text-4xl text-cyber-lime">inbox</span>
-<h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">IMAP Inbox Scanner</h2>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<div class="lg:col-span-1 flex flex-col gap-6">
-<div class="glass-panel p-6">
-<h3 class="font-headline-sm font-bold uppercase text-on-surface-variant mb-4">Connect IMAP</h3>
-<div class="flex flex-col gap-4">
-<input type="text" id="imap-email" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="Email Address">
-<input type="password" id="imap-password" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="App Password">
-<input type="text" id="imap-server" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="IMAP Server (e.g. imap.gmail.com)" value="imap.gmail.com">
-<input type="number" id="imap-limit" class="w-full bg-surface-variant/50 border border-glass-stroke text-on-surface px-4 py-2 rounded focus:outline-none focus:border-cyber-lime" placeholder="Number of emails to fetch" value="5">
-<button id="btn-scan-imap" class="bg-cyber-lime text-background font-bold px-6 py-2 rounded hover:bg-opacity-80 transition-colors mt-2">Scan Inbox</button>
-</div>
-</div>
-</div>
-<div class="lg:col-span-2 flex flex-col gap-6">
-<div class="glass-panel p-6 h-full min-h-[400px]">
-<h3 class="font-headline-sm font-bold uppercase text-on-surface-variant mb-4">Inbox Threat Analysis</h3>
-<div id="imap-results" class="flex flex-col gap-4 overflow-y-auto max-h-[600px] font-code-sm text-sm">
-<div class="text-on-surface-variant text-center mt-10">Awaiting IMAP connection...</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- TAB: DARK WEB SCANNER -->
-<div id="tab-darkweb" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
-<div class="flex items-center gap-4 mb-8">
-<span class="material-symbols-outlined text-4xl text-cyber-lime">password</span>
-<h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">Dark Web Password Scanner</h2>
-</div>
-<div class="glass-panel p-8 max-w-3xl mx-auto text-center">
-<p class="text-on-surface-variant mb-8">Enter a password to securely check if it has been exposed in a data breach using the HaveIBeenPwned k-Anonymity API. We never send your full password over the network.</p>
-<div class="flex gap-4">
-<input type="password" id="pwned-password-input" class="flex-1 bg-surface-variant/50 border border-glass-stroke text-on-surface px-6 py-4 rounded-lg focus:outline-none focus:border-cyber-lime font-code-sm text-lg" placeholder="Enter password to verify...">
-<button id="btn-check-password" class="bg-cyber-lime text-background font-bold px-8 py-4 rounded-lg hover:bg-opacity-80 transition-colors text-lg uppercase tracking-widest">Verify</button>
-</div>
-<div id="pwned-result" class="mt-8 font-headline-md min-h-[60px]"></div>
-</div>
-</div>
-
-<!-- TAB: NETWORK HISTORY -->
-<div id="tab-history" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
-    <div class="flex items-center gap-4 mb-8">
-        <span class="material-symbols-outlined text-4xl text-cyber-lime">history</span>
-        <h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">Network History</h2>
-    </div>
-    <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div>
-                <h5 class="font-headline-md text-headline-md text-on-surface mb-1">Browser History Threat Hunter</h5>
-                <p class="font-code-sm text-code-sm text-on-surface-variant">Captures live open tabs or scans local SQLite databases.</p>
+        <div class="stack">
+          <div class="card card-pad">
+            <h3>Verdict mix</h3>
+            <div class="mix-bar" id="mix-bar"><span class="bg-high" style="width:0"></span><span class="bg-warn" style="width:0"></span><span class="bg-safe" style="width:0"></span></div>
+            <div class="mix-legend">
+              <span><i class="bg-high"></i>High risk <b id="mix-high">0%</b></span>
+              <span><i class="bg-warn"></i>Suspicious <b id="mix-warn">0%</b></span>
+              <span><i class="bg-safe"></i>Safe <b id="mix-safe">0%</b></span>
             </div>
-            <div class="flex gap-2 font-code-sm">
-                <input type="text" id="history-search-input" class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-1" placeholder="Filter..." oninput="filterBrowserHistory()">
-                <select id="history-browser-select" class="bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-1" onchange="loadBrowserHistory()">
-                    <option value="all">Auto (Live)</option>
-                    <option value="live_all">Live: Tabs + History</option>
-                    <option value="chrome">SQLite Scan: Chrome</option>
-                    <option value="edge">SQLite Scan: Edge</option>
-                </select>
-                <button onclick="sortHistoryByScore()" class="px-3 py-1 border border-glass-stroke rounded text-on-surface-variant hover:text-on-surface">Sort</button>
-                <button onclick="loadBrowserHistory()" class="px-3 py-1 bg-cyber-lime text-background rounded font-bold">Scan</button>
-            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Where scanned targets are hosted</h3></div>
+            <div id="threatMap"></div>
+          </div>
         </div>
-        <div class="overflow-x-auto min-h-[400px]">
-            <table class="w-full text-left border-collapse">
-                <thead class="font-label-caps text-label-caps text-on-surface-variant border-b border-glass-stroke">
-                    <tr><th class="p-2">Status</th><th class="p-2">Score</th><th class="p-2">URL</th><th class="p-2">Title</th><th class="p-2">Time</th><th class="p-2">Action</th></tr>
-                </thead>
-                <tbody id="history-table-body" class="font-code-sm text-code-sm">
-                    <tr><td colspan="6" class="p-4 text-center text-on-surface-variant mt-10">Click Scan to begin...</td></tr>
-                </tbody>
+      </div>
+    </section>
+
+    <!-- ===== URL SCANNER ===== -->
+    <section class="page hidden" id="page-url">
+      <div class="page-head">
+        <h2>URL scanner</h2>
+        <p>Checks a link's structure, domain age, keywords and reputation, then explains what drove the score.</p>
+      </div>
+      <div class="card card-pad">
+        <form class="input-row" id="url-form">
+          <input class="input input-lg mono" id="url-input" placeholder="https://secure-update-verify.com" autocomplete="off">
+          <button class="btn btn-primary" style="height:44px" type="submit" id="url-btn"><span class="ms sm">search</span>Analyze</button>
+        </form>
+        <div class="row" style="margin-top:12px">
+          <span class="muted" style="font-size:12.5px">Try an example:</span>
+          <button class="chip" data-example="http://secure-update-paypal-verify.login-bank.ru/signin.php">Fake PayPal login</button>
+          <button class="chip" data-example="http://185.220.101.42/payload/agent_update.exe">Raw IP download</button>
+          <button class="chip" data-example="https://www.github.com/torvalds/linux">GitHub (safe)</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="empty" id="url-empty"><span class="ms">travel_explore</span><h4>No URL analyzed yet</h4><p>Enter a link above to see its risk report.</p></div>
+        <div id="url-result" class="hidden">
+          <div class="verdict">
+            <div style="min-width:0">
+              <span id="url-badge" class="badge neutral"></span>
+              <div class="target" id="url-target"></div>
+            </div>
+            <div class="score-big">
+              <div class="num" id="url-score">–</div>
+              <div class="lbl">Phishing probability</div>
+              <div class="meter"><span id="url-meter"></span></div>
+            </div>
+          </div>
+          <div class="grid g-2" style="gap:0">
+            <div class="panel-body" style="border-right:1px solid var(--border)">
+              <div><div class="section-label">What we found</div><ul class="findings" id="url-findings"></ul></div>
+              <div><div class="section-label">Key signals</div>
+                <div class="signals">
+                  <div class="signal"><div class="k">Domain age</div><div class="v" id="sig-age"></div></div>
+                  <div class="signal"><div class="k">HTTPS</div><div class="v" id="sig-https"></div></div>
+                  <div class="signal"><div class="k">Uses raw IP</div><div class="v" id="sig-ip"></div></div>
+                  <div class="signal"><div class="k">Subdomains</div><div class="v" id="sig-sub"></div></div>
+                  <div class="signal"><div class="k">Risky keywords</div><div class="v" id="sig-kw"></div></div>
+                  <div class="signal"><div class="k">Entropy</div><div class="v" id="sig-ent"></div></div>
+                </div>
+              </div>
+              <div><div class="section-label">Hosting location</div><div id="url-geo" class="muted"></div></div>
+            </div>
+            <div class="panel-body">
+              <div><div class="section-label">Why the model decided this</div><div id="url-shap"></div>
+                <div class="shap-note">Red pushes toward phishing, green pushes toward safe.</div></div>
+              <div><div class="section-label">VirusTotal</div><div id="url-vt" class="muted">Not checked.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EMAIL ANALYZER ===== -->
+    <section class="page hidden" id="page-email">
+      <div class="page-head">
+        <h2>Email analyzer</h2>
+        <p>Upload a raw .eml file to check sender authentication, routing and message content.</p>
+      </div>
+      <div class="grid g-main">
+        <div class="stack">
+          <div class="card card-pad">
+            <label class="dropzone" id="dropzone">
+              <input type="file" id="eml-input" accept=".eml,.txt" class="hidden">
+              <span class="ms">upload_file</span>
+              <b>Drop an .eml file here</b>
+              <span class="muted" style="font-size:12.5px">or click to browse</span>
+            </label>
+          </div>
+          <div class="card card-pad">
+            <div class="section-label">Or try a sample</div>
+            <div class="stack" style="gap:8px" id="sample-list"><span class="muted">Loading samples…</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="empty" id="email-empty"><span class="ms">drafts</span><h4>No email loaded</h4><p>Upload a file or pick a sample to see the report.</p></div>
+          <div id="email-result" class="hidden">
+            <div class="verdict">
+              <div style="min-width:0">
+                <span id="email-badge" class="badge neutral"></span>
+                <div class="target" id="email-name"></div>
+              </div>
+              <div class="score-big">
+                <div class="num" id="email-score">–</div>
+                <div class="lbl">Phishing probability</div>
+                <div class="meter"><span id="email-meter"></span></div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="pills">
+                <span class="pill">SPF <b id="em-spf"></b></span>
+                <span class="pill">DKIM <b id="em-dkim"></b></span>
+                <span class="pill">Mail hops <b id="em-hops"></b></span>
+                <span class="pill">Urgency score <b id="em-urgency"></b></span>
+              </div>
+              <table class="kv">
+                <tr><td>From</td><td id="em-from"></td></tr>
+                <tr><td>Return-Path</td><td id="em-return"></td></tr>
+                <tr><td>Subject</td><td id="em-subject" style="font-weight:600"></td></tr>
+                <tr><td>Sender IPs</td><td id="em-ips" class="mono"></td></tr>
+              </table>
+              <div><div class="section-label">What we found</div><ul class="findings" id="email-findings"></ul></div>
+              <div><div class="section-label">Why the model decided this</div><div id="email-shap"></div>
+                <div class="shap-note">Red pushes toward phishing, green pushes toward safe.</div></div>
+              <div><div class="section-label">Message body</div><pre class="pre" id="em-body"></pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== INBOX SCAN ===== -->
+    <section class="page hidden" id="page-inbox">
+      <div class="page-head">
+        <h2>Inbox scan</h2>
+        <p>Connect to a mailbox over IMAP and score the latest messages.</p>
+      </div>
+      <div class="grid g-main">
+        <div class="card card-pad">
+          <form class="stack" id="imap-form" style="gap:14px">
+            <div class="field"><label for="imap-email">Email address</label><input class="input" id="imap-email" type="email" autocomplete="off" placeholder="you@gmail.com"></div>
+            <div class="field"><label for="imap-password">App password</label><input class="input" id="imap-password" type="password" autocomplete="off" placeholder="16-character app password"></div>
+            <div class="grid g-2" style="gap:12px">
+              <div class="field"><label for="imap-server">IMAP server</label><input class="input" id="imap-server" value="imap.gmail.com"></div>
+              <div class="field"><label for="imap-limit">Messages</label><input class="input" id="imap-limit" type="number" min="1" max="50" value="5"></div>
+            </div>
+            <button class="btn btn-primary" id="imap-btn" type="submit"><span class="ms sm">sync</span>Scan inbox</button>
+            <div class="notice"><span class="ms sm">info</span><span>Use an app password, not your normal password. It's used for this scan only and never stored.</span></div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Results</h3><span class="sub" id="imap-count"></span></div>
+          <div class="card-pad stack" id="imap-results" style="gap:10px">
+            <div class="empty"><span class="ms">mark_email_unread</span><h4>Not connected</h4><p>Enter your mailbox details to start.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BROWSER HISTORY ===== -->
+    <section class="page hidden" id="page-history">
+      <div class="page-head">
+        <h2>Browser history</h2>
+        <p>Scores recently visited pages. With the browser extension installed it reads your live tabs and history.</p>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <input class="input" id="history-filter" placeholder="Filter by URL or title…">
+          <select class="select" id="history-source">
+            <option value="all">Auto (extension if available)</option>
+            <option value="live_all">Extension: tabs + history</option>
+            <option value="chrome">Local database: Chrome</option>
+            <option value="edge">Local database: Edge</option>
+          </select>
+          <button class="btn" id="history-sort"><span class="ms sm">swap_vert</span>Sort by risk</button>
+          <button class="btn btn-primary" id="history-scan"><span class="ms sm">play_arrow</span>Scan</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Verdict</th><th>Score</th><th>URL</th><th>Title</th><th>Source</th><th>Visited</th><th></th></tr></thead>
+            <tbody id="history-body"><tr><td colspan="7" class="empty-cell">Click Scan to check your history.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== NETWORK MONITOR ===== -->
+    <section class="page hidden" id="page-network">
+      <div class="page-head">
+        <h2>Network monitor</h2>
+        <p>Captures DNS lookups and HTTP requests and scores each destination.</p>
+      </div>
+      <div class="card card-pad">
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            <select class="select" id="net-duration">
+              <option value="4">Capture 4 seconds</option>
+              <option value="8" selected>Capture 8 seconds</option>
+              <option value="15">Capture 15 seconds</option>
+            </select>
+            <button class="btn btn-primary" id="net-capture"><span class="ms sm">radio_button_checked</span>Start capture</button>
+            <button class="btn" id="net-live"><span class="ms sm">stream</span>Live mode</button>
+          </div>
+          <div class="status-line"><span class="dot" id="net-dot"></span><span id="net-status">Idle</span></div>
+        </div>
+      </div>
+      <div class="grid g-2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-head"><h3>Destinations per capture</h3></div>
+          <div class="legend"><span><i class="bg-high"></i>Flagged</span><span><i class="bg-safe"></i>Normal</span></div>
+          <div class="chart-box"><canvas id="net-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Captured destinations</h3><span class="sub" id="net-count"></span></div>
+          <div class="table-wrap" style="max-height:340px;overflow-y:auto">
+            <table class="table">
+              <thead><tr><th>Verdict</th><th>Score</th><th>Destination</th><th></th></tr></thead>
+              <tbody id="net-body"><tr><td colspan="4" class="empty-cell">No traffic captured yet.</td></tr></tbody>
             </table>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
+    </section>
 
-<!-- TAB: PACKET SNIFFER -->
-<div id="tab-sniffer" class="tab-content hidden max-w-7xl mx-auto px-container-margin py-8">
-    <div class="flex items-center gap-4 mb-8">
-        <span class="material-symbols-outlined text-4xl text-cyber-lime">wifi_tethering</span>
-        <h2 class="font-headline-lg text-headline-lg font-black tracking-widest uppercase">Live Packet Sniffer</h2>
-    </div>
-    <div class="bg-glass-fill border border-glass-stroke p-6 rounded-lg flex flex-col gap-6">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <p class="font-code-sm text-code-sm text-on-surface-variant mb-4">Real-time DNS & HTTP capture via Tshark/fallback.</p>
-                <div class="flex flex-wrap gap-4 items-center">
-                    <select id="sniffer-timeout" class="w-48 bg-surface-variant/50 border border-glass-stroke rounded text-on-surface px-3 py-2 font-code-sm">
-                        <option value="4">4 Seconds</option>
-                        <option value="8" selected>8 Seconds</option>
-                        <option value="15">15 Seconds</option>
-                    </select>
-                    <button id="btn-start-sniff" onclick="startPacketCapture()" class="bg-cyber-lime text-background font-label-caps px-6 py-2 rounded font-bold tracking-wider hover:bg-opacity-80 transition-colors">START BATCH CAPTURE</button>
-                    <button id="btn-stream-sniff" onclick="toggleWebSocketStream()" class="border border-neon-crimson text-neon-crimson font-label-caps px-6 py-2 rounded font-bold tracking-wider hover:bg-neon-crimson/10 transition-colors">START WEBSOCKET STREAM</button>
-                </div>
+    <!-- ===== PASSWORD CHECK ===== -->
+    <section class="page hidden" id="page-password">
+      <div class="page-head">
+        <h2>Password breach check</h2>
+        <p>Checks whether a password appears in known data breaches via Have I Been Pwned.</p>
+      </div>
+      <div class="card card-pad" style="max-width:640px">
+        <form class="stack" id="pw-form" style="gap:14px">
+          <div class="field"><label for="pw-input">Password</label>
+            <div class="input-row">
+              <input class="input input-lg" id="pw-input" type="password" autocomplete="off" placeholder="Enter a password">
+              <button class="btn btn-primary" style="height:44px" type="submit" id="pw-btn">Check</button>
             </div>
-            <div class="p-3 bg-surface-container-highest border border-glass-stroke rounded font-code-sm text-sm text-on-surface-variant md:min-w-[300px] text-center" id="sniffer-mode-text">
-                Ready to capture...
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
-            <div class="flex flex-col min-w-0 bg-surface-variant/30 border border-glass-stroke rounded p-4">
-                <h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4">Live Telemetry</h3>
-                <div class="flex-1 w-full" style="min-height: 250px;"><canvas id="snifferTimelineChart"></canvas></div>
-            </div>
-            <div class="flex flex-col min-w-0 bg-surface-variant/30 border border-glass-stroke rounded p-4">
-                <h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4">Intercepted Packets</h3>
-                <div class="flex-1 overflow-y-auto max-h-[500px]">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="font-label-caps text-label-caps text-on-surface-variant border-b border-glass-stroke">
-                            <tr><th class="p-2">Flag</th><th class="p-2">Score</th><th class="p-2">URI</th><th class="p-2">Analyze</th></tr>
-                        </thead>
-                        <tbody id="sniffer-table-body" class="font-code-sm text-code-sm">
-                            <tr><td colspan="4" class="p-4 text-center text-on-surface-variant mt-10">Awaiting packets...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+          </div>
+          <div class="notice"><span class="ms sm">lock</span><span>Only the first 5 characters of the password's SHA-1 hash leave the server (k-anonymity). The password itself is never sent to the breach service.</span></div>
+          <div id="pw-result"></div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- High-risk alert -->
+<div class="modal hidden" id="risk-modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <h3 class="t-high"><span class="ms">gpp_bad</span>High-risk page found</h3>
+    <p>One of the scanned pages looks like phishing. Review it before visiting again.</p>
+    <table class="kv"><tr><td>URL</td><td id="risk-url" class="mono" style="word-break:break-all"></td></tr><tr><td>Title</td><td id="risk-title"></td></tr></table>
+    <div class="modal-actions">
+      <button class="btn" id="risk-dismiss">Dismiss</button>
+      <button class="btn btn-primary" id="risk-inspect">Open full report</button>
     </div>
+  </div>
 </div>
 
-</div>
-</main>
-
-<footer id="main-footer" class="fixed bottom-0 right-0 left-0 h-8 border-t border-glass-stroke bg-surface-container-lowest flex items-center justify-between px-gutter w-full z-40 overflow-hidden transition-all duration-300">
-<span class="font-code-sm text-cyber-lime whitespace-nowrap opacity-80">© 2026 OBSIDIAN FORENSICS</span>
-<div class="flex gap-8 whitespace-nowrap overflow-hidden relative flex-1 ml-8">
-<div class="marquee-scroll flex gap-8 font-label-caps text-label-caps text-on-surface-variant w-full">
-<span class="hover:text-cyber-lime transition-colors">Network Event Stream: Active</span>
-<span class="hover:text-cyber-lime transition-colors">Database: Synchronized</span>
-<span class="hover:text-cyber-lime transition-colors">Model Health: Optimal</span>
-</div>
-</div>
-</footer>
-
-<!-- Modals (Custom Vanilla HTML/Tailwind) -->
-<div id="diagModal" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-surface-container border border-glass-stroke p-6 rounded-lg max-w-lg w-full">
-        <h5 class="font-headline-md text-cyber-lime mb-4">System Health Diagnostics</h5>
-        <div class="p-4 bg-surface-container-lowest border border-glass-stroke rounded font-code-sm text-sm text-on-surface flex flex-col gap-2">
-            <p class="text-cyber-lime">✔ RandomForest URL Model: 100 Estimators (Active)</p>
-            <p class="text-cyber-lime">✔ RandomForest Email Model: 100 Estimators (Active)</p>
-            <p class="text-on-surface">✔ Network Sniffer Engine: Loaded</p>
-        </div>
-        <button onclick="document.getElementById('diagModal').classList.add('hidden')" class="mt-6 px-4 py-2 border border-glass-stroke text-on-surface rounded hover:bg-surface-variant">Close</button>
-    </div>
-</div>
-
-<div id="highRiskModal" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-md">
-    <div class="bg-surface-container border border-neon-crimson p-6 rounded-lg max-w-lg w-full shadow-[0_0_40px_rgba(255,63,52,0.4)]">
-        <h5 class="font-headline-md text-neon-crimson mb-4 flex items-center gap-2"><span class="material-symbols-outlined">warning</span> HIGH RISK DETECTED</h5>
-        <div class="p-4 bg-error-container/20 border border-neon-crimson rounded font-code-sm text-sm text-on-surface flex flex-col gap-2 mb-4">
-            <p id="highRiskModalUrl" class="text-neon-crimson font-bold break-all"></p>
-            <p id="highRiskModalTitle" class="text-on-surface-variant"></p>
-        </div>
-        <p class="font-code-sm text-xs text-on-surface-variant mb-6">Immediate inspection is recommended!</p>
-        <div class="flex justify-end gap-3">
-            <button onclick="document.getElementById('highRiskModal').classList.add('hidden')" class="px-4 py-2 border border-glass-stroke text-on-surface rounded hover:bg-surface-variant">Dismiss</button>
-            <button id="highRiskModalInspectBtn" class="px-4 py-2 bg-neon-crimson text-white rounded font-bold">Inspect Threat</button>
-        </div>
-    </div>
-</div>
+<div class="toasts" id="toasts"></div>
 
 <script src="/static/js/chart.min.js?v=8"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="/static/js/dashboard.js?v=12"></script>
-</body></html>
-
-
+<script src="/static/js/app.js?v=1"></script>
+</body>
+</html>
