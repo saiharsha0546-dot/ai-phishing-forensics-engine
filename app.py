@@ -261,6 +261,7 @@ def analyze_email():
     elif request.is_json:
         data = request.get_json()
         raw_email = data.get('raw_email', '')
+        filename = data.get('filename') or filename
         if raw_email:
             headers, body_text = parse_email_content(raw_email)
 
@@ -758,7 +759,8 @@ def analyze_imap():
         
     res = scan_imap_inbox(email_addr, password, server, port, limit)
     if 'error' in res:
-        return jsonify(res), 500
+        status = 401 if 'Authentication' in res['error'] else 502
+        return jsonify(res), status
         
     scored_emails = []
     for raw_email in res.get('emails', []):
