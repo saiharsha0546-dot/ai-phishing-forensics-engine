@@ -77,7 +77,7 @@ a { color: var(--primary); text-decoration: none; }
   padding: 0 28px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
 }
 .topbar h1 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; }
-.menu-btn { display: none; }
+.btn.menu-btn { display: none; }
 .content { max-width: 1240px; margin: 0 auto; padding: 28px; }
 .page-head { margin-bottom: 20px; }
 .page-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 4px; }
@@ -274,7 +274,7 @@ a { color: var(--primary); text-decoration: none; }
   body.nav-open .sidebar { transform: none; }
   body.nav-open .scrim { display: block; position: fixed; inset: 0; background: rgba(16,24,40,.35); z-index: 35; }
   .main { margin-left: 0; }
-  .menu-btn { display: inline-flex; }
+  .btn.menu-btn { display: inline-flex; }
   .content { padding: 20px 16px; }
   .topbar { padding: 0 16px; }
   .g-2, .g-3 { grid-template-columns: minmax(0,1fr); }
