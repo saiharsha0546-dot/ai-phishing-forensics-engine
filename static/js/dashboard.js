@@ -13,6 +13,11 @@ let liveTotalCount = 0;
 let rawHistoryData = [];
 let historySortDesc = true;
 
+// Escape untrusted text (URLs, email headers, page titles) before inserting into innerHTML
+function esc(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     try { initUrlChart(); } catch (e) { console.warn("Chart init error:", e); }
     try { initSnifferChart(); } catch (e) { console.warn("Sniffer chart init error:", e); }
@@ -77,20 +82,20 @@ function initIntegrations() {
                 });
                 const data = await response.json();
                 if (data.error) {
-                    resultsElem.innerHTML = `<div class='text-neon-crimson text-center mt-10'>Error: ${data.error}</div>`;
+                    resultsElem.innerHTML = `<div class='text-neon-crimson text-center mt-10'>Error: ${esc(data.error)}</div>`;
                 } else {
                     resultsElem.innerHTML = "";
                     if (data.results && data.results.length > 0) {
                         data.results.forEach(res => {
-                            const threatStr = res.threat_indicators.map(t => `<div class="text-neon-crimson"><span class="material-symbols-outlined text-xs align-middle mr-1">warning</span> ${t}</div>`).join('');
+                            const threatStr = res.threat_indicators.map(t => `<div class="text-neon-crimson"><span class="material-symbols-outlined text-xs align-middle mr-1">warning</span> ${esc(t)}</div>`).join('');
                             const card = document.createElement('div');
                             card.className = "bg-surface-variant/30 p-4 rounded-lg border border-glass-stroke flex flex-col gap-2";
                             card.innerHTML = `
                                 <div class="flex justify-between items-start">
-                                    <h4 class="font-bold text-on-surface truncate pr-4">${res.subject}</h4>
-                                    <span class="px-2 py-1 rounded text-xs font-bold text-background bg-${res.color_class === 'danger' ? 'neon-crimson' : (res.color_class === 'warning' ? 'warning-amber' : 'cyber-lime')}">${res.risk_level}</span>
+                                    <h4 class="font-bold text-on-surface truncate pr-4">${esc(res.subject)}</h4>
+                                    <span class="px-2 py-1 rounded text-xs font-bold text-background bg-${res.color_class === 'danger' ? 'neon-crimson' : (res.color_class === 'warning' ? 'warning-amber' : 'cyber-lime')}">${esc(res.risk_level)}</span>
                                 </div>
-                                <div class="text-on-surface-variant text-xs">From: ${res.from} | Date: ${res.date}</div>
+                                <div class="text-on-surface-variant text-xs">From: ${esc(res.from)} | Date: ${esc(res.date)}</div>
                                 <div class="text-sm font-bold ${res.color_class === 'danger' ? 'text-neon-crimson' : (res.color_class === 'warning' ? 'text-warning-amber' : 'text-cyber-lime')} mt-2">Threat Score: ${res.probability}%</div>
                                 ${threatStr}
                             `;
@@ -174,6 +179,10 @@ function switchTab(targetId, tabElement = null) {
         target.classList.add('block');
     }
     
+    if (!tabElement) tabElement = document.querySelector(`.sidebar-link[data-tab="${targetId}"]`);
+    const crumb = document.getElementById('breadcrumb-current');
+    if (crumb && tabElement) crumb.innerText = tabElement.querySelector('span:last-child').innerText.trim();
+
     if (tabElement) {
         tabElement.classList.add('bg-cyber-lime/10', 'text-cyber-lime', 'font-bold');
         tabElement.classList.remove('text-on-surface-variant');
@@ -271,7 +280,7 @@ async function analyzeUrl() {
 
     document.getElementById('url-empty-state').classList.add('hidden');
     document.getElementById('url-report-content').classList.remove('hidden');
-    document.getElementById('url-display-target').innerHTML = `Analyzing: <span class="text-cyber-lime">${urlInput}</span>`;
+    document.getElementById('url-display-target').innerHTML = `Analyzing: <span class="text-cyber-lime">${esc(urlInput)}</span>`;
     document.getElementById('url-prob-score').innerText = "...";
 
     try {
@@ -322,7 +331,7 @@ async function analyzeUrl() {
         factorsList.innerHTML = "";
         data.risk_factors.forEach(rf => {
             const li = document.createElement('li');
-            li.innerHTML = `<span class="material-symbols-outlined text-xs align-middle mr-1 ${colorClass}">warning</span> ${rf}`;
+            li.innerHTML = `<span class="material-symbols-outlined text-xs align-middle mr-1 ${colorClass}">warning</span> ${esc(rf)}`;
             factorsList.appendChild(li);
         });
 
@@ -334,9 +343,9 @@ async function analyzeUrl() {
             if (vtContainer) {
                 if (data.virustotal.status === 'success') {
                     const color = data.virustotal.positives > 0 ? 'text-neon-crimson' : 'text-cyber-lime';
-                    vtContainer.innerHTML = `<div class="text-xl ${color} font-bold mb-2">${data.virustotal.positives} / ${data.virustotal.total} flags</div><p>${data.virustotal.message}</p>`;
+                    vtContainer.innerHTML = `<div class="text-xl ${color} font-bold mb-2">${data.virustotal.positives} / ${data.virustotal.total} flags</div><p>${esc(data.virustotal.message)}</p>`;
                 } else {
-                    vtContainer.innerHTML = `<p>${data.virustotal.message}</p>`;
+                    vtContainer.innerHTML = `<p>${esc(data.virustotal.message)}</p>`;
                 }
             }
         }
@@ -415,7 +424,7 @@ async function analyzeRawEmailText(rawContent, filename = "Sample Email") {
         const response = await fetch('/api/analyze/email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ raw_email: rawContent })
+            body: JSON.stringify({ raw_email: rawContent, filename })
         });
         const data = await response.json();
         if (data.error) { alert("Error: " + data.error); return; }
@@ -467,7 +476,7 @@ function renderEmailReport(data) {
     threatList.innerHTML = "";
     data.threat_indicators.forEach(ti => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="material-symbols-outlined text-xs align-middle mr-1 ${colorClass}">bug_report</span> ${ti}`;
+        li.innerHTML = `<span class="material-symbols-outlined text-xs align-middle mr-1 ${colorClass}">bug_report</span> ${esc(ti)}`;
         threatList.appendChild(li);
     });
 
@@ -614,13 +623,14 @@ function renderHistoryTable() {
         else if (item.probability >= 35) colorClass = 'text-warning-amber';
         
         tr.innerHTML = `
-            <td class="p-2"><span class="bg-surface-variant px-2 py-0.5 rounded text-xs">${item.source}</span></td>
-            <td class="p-2 ${colorClass} font-bold">${item.probability}%</td>
-            <td class="p-2 text-on-surface truncate max-w-[200px]" title="${item.url}">${item.url}</td>
-            <td class="p-2 text-on-surface-variant truncate max-w-[150px]" title="${item.title}">${item.title}</td>
-            <td class="p-2 text-on-surface-variant text-xs">${item.time}</td>
-            <td class="p-2 text-right"><span class="material-symbols-outlined text-sm cursor-pointer hover:text-cyber-lime" onclick="inspectFromHistory('${item.url.replace(/'/g, "\'")}')">visibility</span></td>
+            <td class="p-2"><span class="bg-surface-variant px-2 py-0.5 rounded text-xs">${esc(item.source)}</span></td>
+            <td class="p-2 ${colorClass} font-bold">${esc(item.probability)}%</td>
+            <td class="p-2 text-on-surface truncate max-w-[200px]" title="${esc(item.url)}">${esc(item.url)}</td>
+            <td class="p-2 text-on-surface-variant truncate max-w-[150px]" title="${esc(item.title)}">${esc(item.title)}</td>
+            <td class="p-2 text-on-surface-variant text-xs">${esc(item.time)}</td>
+            <td class="p-2 text-right"><span class="material-symbols-outlined text-sm cursor-pointer hover:text-cyber-lime">visibility</span></td>
         `;
+        tr.querySelector('td:last-child span').addEventListener('click', () => inspectFromHistory(item.url));
         tbody.appendChild(tr);
     });
 }
@@ -645,7 +655,7 @@ function showHighRiskPopup(item) {
     const inspectBtn = document.getElementById('highRiskModalInspectBtn');
     inspectBtn.onclick = () => {
         modalEl.classList.add('hidden');
-        inspectFromHistory(item.url.replace(/'/g, "\'"));
+        inspectFromHistory(item.url);
     };
     modalEl.classList.remove('hidden');
 }
@@ -682,7 +692,7 @@ async function startPacketCapture() {
         });
         const data = await response.json();
         if (data.error) {
-            tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-neon-crimson">${data.error}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-neon-crimson">${esc(data.error)}</td></tr>`;
             btn.disabled = false;
             btn.innerText = `START BATCH CAPTURE`;
             return;
@@ -737,10 +747,11 @@ function renderSnifferRow(pkt, targetTbody) {
     
     tr.innerHTML = `
         <td class="p-2"><span class="bg-surface-variant px-2 py-0.5 rounded text-xs ${colorClass}">${flag}</span></td>
-        <td class="p-2 ${colorClass} font-bold">${pkt.probability}%</td>
-        <td class="p-2 text-on-surface truncate max-w-[200px]" title="${pkt.uri}">${pkt.uri}</td>
-        <td class="p-2 text-right"><span class="material-symbols-outlined text-sm cursor-pointer hover:text-cyber-lime" onclick="inspectFromHistory('${pkt.uri.replace(/'/g, "\'")}')">visibility</span></td>
+        <td class="p-2 ${colorClass} font-bold">${esc(pkt.probability)}%</td>
+        <td class="p-2 text-on-surface truncate max-w-[200px]" title="${esc(pkt.uri)}">${esc(pkt.uri)}</td>
+        <td class="p-2 text-right"><span class="material-symbols-outlined text-sm cursor-pointer hover:text-cyber-lime">visibility</span></td>
     `;
+    tr.querySelector('td:last-child span').addEventListener('click', () => inspectFromHistory(pkt.uri));
     targetTbody.insertBefore(tr, targetTbody.firstChild);
     if (targetTbody.children.length > 30) targetTbody.removeChild(targetTbody.lastChild);
 }
@@ -841,7 +852,7 @@ function renderShapBars(containerId, barsId, shapData) {
     if (shapData.positive_forces) {
         shapData.positive_forces.forEach(item => {
             barsElem.innerHTML += `<div class="flex items-center gap-2">
-                <span class="w-24 truncate" title="${item.name}">${item.name}</span>
+                <span class="w-24 truncate" title="${esc(item.name)}">${esc(item.name)}</span>
                 <div class="flex-1 bg-surface-variant h-2 rounded"><div class="bg-neon-crimson h-full rounded shadow-[0_0_8px_rgba(255,63,52,0.6)]" style="width: ${Math.min(100, Math.abs(item.contribution) * 2.5)}%;"></div></div>
                 <span class="text-neon-crimson w-12 text-right">+${item.contribution}%</span>
             </div>`;
@@ -850,9 +861,9 @@ function renderShapBars(containerId, barsId, shapData) {
     if (shapData.negative_forces) {
         shapData.negative_forces.forEach(item => {
             barsElem.innerHTML += `<div class="flex items-center gap-2">
-                <span class="w-24 truncate" title="${item.name}">${item.name}</span>
+                <span class="w-24 truncate" title="${esc(item.name)}">${esc(item.name)}</span>
                 <div class="flex-1 bg-surface-variant h-2 rounded"><div class="bg-cyber-lime h-full rounded shadow-[0_0_8px_rgba(50,255,126,0.6)]" style="width: ${Math.min(100, Math.abs(item.contribution) * 2.5)}%;"></div></div>
-                <span class="text-cyber-lime w-12 text-right">-${item.contribution}%</span>
+                <span class="text-cyber-lime w-12 text-right">-${Math.abs(item.contribution)}%</span>
             </div>`;
         });
     }
