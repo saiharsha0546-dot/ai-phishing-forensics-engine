@@ -95,7 +95,7 @@ function shapHtml(shap) {
 
 // ---------- Navigation ----------
 const PAGE_TITLES = {
-    overview: 'Overview', url: 'URL scanner', email: 'Email analyzer', inbox: 'Inbox scan',
+    overview: 'Overview', url: 'URL scanner', email: 'Email analyzer',
     history: 'Browser history', network: 'Network monitor', password: 'Password breach check'
 };
 
@@ -321,45 +321,6 @@ function initEmail() {
     ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
     dz.addEventListener('drop', e => { const file = e.dataTransfer.files[0]; if (file) analyzeEmail({ file, filename: file.name }); });
     loadSamples();
-}
-
-// ---------- Inbox scan ----------
-async function scanInbox(e) {
-    e.preventDefault();
-    const email = $('imap-email').value.trim();
-    const password = $('imap-password').value;
-    if (!email || !password) { toast('Enter the email address and app password.', true); return; }
-    const out = $('imap-results');
-    const btn = $('imap-btn');
-    setBusy(btn, true, 'Connecting…');
-    out.innerHTML = '<div class="empty"><span class="spinner"></span><p style="margin-top:10px">Connecting to the mail server…</p></div>';
-    $('imap-count').textContent = '';
-    try {
-        const data = await postJSON('/api/analyze/imap', { email, password, server: $('imap-server').value.trim(), limit: $('imap-limit').value });
-        if (data.error) {
-            out.innerHTML = `<div class="empty"><span class="ms t-high">error</span><h4>Couldn't scan the inbox</h4><p>${esc(data.error)}</p></div>`;
-            return;
-        }
-        const results = data.results || [];
-        $('imap-count').textContent = `${results.length} message${results.length === 1 ? '' : 's'}`;
-        if (!results.length) { out.innerHTML = '<div class="empty"><span class="ms">inbox</span><h4>No messages found</h4></div>'; return; }
-        out.innerHTML = '';
-        results.forEach(r => {
-            const card = document.createElement('div');
-            card.className = 'mail-card';
-            card.innerHTML = `
-                <div class="top"><h4 title="${esc(r.subject)}">${esc(r.subject)}</h4>${badgeHtml(r.probability, r.risk_level)}</div>
-                <div class="meta">${esc(r.from)}${r.date ? ` · ${esc(r.date)}` : ''} · <b class="t-${level(r.probability)}">${esc(r.probability)}%</b></div>
-                ${(r.threat_indicators || []).length ? `<ul class="findings">${findingsHtml(r.threat_indicators, r.probability)}</ul>` : ''}`;
-            out.appendChild(card);
-            recordActivity('inbox', r.subject, r.probability);
-        });
-    } catch (err) {
-        out.innerHTML = `<div class="empty"><span class="ms t-high">error</span><h4>Scan failed</h4><p>${esc(err.message)}</p></div>`;
-    } finally {
-        setBusy(btn, false);
-        $('imap-password').value = '';
-    }
 }
 
 // ---------- Password check ----------
@@ -661,7 +622,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     $('url-form').addEventListener('submit', e => { e.preventDefault(); analyzeUrl(); });
     document.querySelectorAll('[data-example]').forEach(b => b.addEventListener('click', () => { $('url-input').value = b.dataset.example; analyzeUrl(); }));
-    $('imap-form').addEventListener('submit', scanInbox);
     $('pw-form').addEventListener('submit', checkPassword);
     $('history-scan').addEventListener('click', loadHistory);
     $('history-filter').addEventListener('input', renderHistory);
