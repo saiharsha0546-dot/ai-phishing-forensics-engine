@@ -107,7 +107,6 @@ function showPage(name) {
     document.body.classList.remove('nav-open');
     if (location.hash !== `#${name}`) history.replaceState(null, '', `#${name}`);
     window.scrollTo(0, 0);
-    if (name === 'overview' && map) setTimeout(() => map.invalidateSize(), 50);
 }
 
 function initNav() {
@@ -121,7 +120,7 @@ function initNav() {
         }
         const collapsed = document.body.classList.toggle('sidebar-collapsed');
         try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch { /* storage unavailable */ }
-        setTimeout(() => { if (map) map.invalidateSize(); if (netChart) netChart.resize(); }, 250);
+        setTimeout(() => { if (netChart) netChart.resize(); }, 250);
     });
     $('scrim').addEventListener('click', () => document.body.classList.remove('nav-open'));
     showPage(location.hash.slice(1) || 'overview');
@@ -134,7 +133,6 @@ const KIND_TEXT = { url: 'URL scan', email: 'Email', inbox: 'Inbox', history: 'B
 
 function recordActivity(kind, target, probability, geo) {
     activity.unshift({ kind, target: String(target || ''), p: Number(probability) || 0, ts: Date.now() });
-    if (geo) addMapMarker(geo, target, probability);
     renderOverview();
 }
 
@@ -173,27 +171,6 @@ function renderOverview() {
         }
         feed.appendChild(li);
     });
-}
-
-// ---------- Map ----------
-let map = null, mapLayer = null;
-function initMap() {
-    if (typeof L === 'undefined' || !$('threatMap')) return;
-    map = L.map('threatMap', { center: [25, 10], zoom: 1, minZoom: 1, worldCopyJump: true, zoomControl: true, attributionControl: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap' }).addTo(map);
-    mapLayer = L.layerGroup().addTo(map);
-    setTimeout(() => map.invalidateSize(), 300);
-}
-
-function addMapMarker(geo, label, p) {
-    if (!map || !geo || geo.lat == null || geo.lon == null) return;
-    const l = level(p);
-    const icon = L.divIcon({ className: '', html: `<div class="map-dot ${l}"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
-    const place = [geo.city, geo.country].filter(Boolean).join(', ');
-    L.marker([geo.lat, geo.lon], { icon }).addTo(mapLayer)
-        .bindTooltip(`<b>${esc(LEVEL_TEXT[l])} · ${esc(p)}%</b><br>${esc(String(label).slice(0, 60))}${place ? `<br>${esc(place)}` : ''}`);
-    const layers = mapLayer.getLayers();
-    if (layers.length > 60) mapLayer.removeLayer(layers[0]);
 }
 
 // ---------- URL scanner ----------
@@ -607,7 +584,6 @@ async function retrain() {
 // ---------- Boot ----------
 document.addEventListener('DOMContentLoaded', () => {
     const safe = (fn, name) => { try { fn(); } catch (e) { console.warn(`${name} init failed:`, e); } };
-    safe(initMap, 'Map');
     safe(initNav, 'Navigation');
     safe(initEmail, 'Email');
     safe(initNetChart, 'Network chart');
