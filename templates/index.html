@@ -26,7 +26,6 @@
     <div class="nav-group">Analyze</div>
     <button class="nav-link" data-page="url"><span class="ms">link</span>URL scanner</button>
     <button class="nav-link" data-page="email"><span class="ms">mail</span>Email analyzer</button>
-    <button class="nav-link" data-page="inbox"><span class="ms">inbox</span>Inbox scan</button>
     <div class="nav-group">Monitor</div>
     <button class="nav-link" data-page="history"><span class="ms">history</span>Browser history</button>
     <button class="nav-link" data-page="network"><span class="ms">lan</span>Network monitor</button>
@@ -65,7 +64,6 @@
         </form>
         <div class="shortcuts">
           <button class="shortcut" data-goto="email"><span class="ms">mail</span>Analyze an email</button>
-          <button class="shortcut" data-goto="inbox"><span class="ms">inbox</span>Scan an inbox</button>
           <button class="shortcut" data-goto="history"><span class="ms">history</span>Check browser history</button>
           <button class="shortcut" data-goto="password"><span class="ms">key</span>Check a password</button>
         </div>
@@ -215,34 +213,6 @@
                 <div class="shap-note">Red pushes toward phishing, green pushes toward safe.</div></div>
               <div><div class="section-label">Message body</div><pre class="pre" id="em-body"></pre></div>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== INBOX SCAN ===== -->
-    <section class="page hidden" id="page-inbox">
-      <div class="page-head">
-        <h2>Inbox scan</h2>
-        <p>Connect to a mailbox over IMAP and score the latest messages.</p>
-      </div>
-      <div class="grid g-main">
-        <div class="card card-pad">
-          <form class="stack" id="imap-form" style="gap:14px">
-            <div class="field"><label for="imap-email">Email address</label><input class="input" id="imap-email" type="email" autocomplete="off" placeholder="you@gmail.com"></div>
-            <div class="field"><label for="imap-password">App password</label><input class="input" id="imap-password" type="password" autocomplete="off" placeholder="16-character app password"></div>
-            <div class="grid g-2" style="gap:12px">
-              <div class="field"><label for="imap-server">IMAP server</label><input class="input" id="imap-server" value="imap.gmail.com"></div>
-              <div class="field"><label for="imap-limit">Messages</label><input class="input" id="imap-limit" type="number" min="1" max="50" value="5"></div>
-            </div>
-            <button class="btn btn-primary" id="imap-btn" type="submit"><span class="ms sm">sync</span>Scan inbox</button>
-            <div class="notice"><span class="ms sm">info</span><span>Use an app password, not your normal password. It's used for this scan only and never stored.</span></div>
-          </form>
-        </div>
-        <div class="card">
-          <div class="card-head"><h3>Results</h3><span class="sub" id="imap-count"></span></div>
-          <div class="card-pad stack" id="imap-results" style="gap:10px">
-            <div class="empty"><span class="ms">mark_email_unread</span><h4>Not connected</h4><p>Enter your mailbox details to start.</p></div>
           </div>
         </div>
       </div>
