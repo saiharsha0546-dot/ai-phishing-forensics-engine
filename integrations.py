@@ -1,9 +1,6 @@
 import os
 import requests
 import hashlib
-import imaplib
-import email
-from email.header import decode_header
 import base64
 
 def check_virustotal(url):
@@ -70,54 +67,3 @@ def check_pwned_password(password):
         return {'found': False, 'count': 0}
     except Exception as e:
         return {'error': str(e)}
-
-def _decode_str(s):
-    if not s: return ""
-    decoded_parts = decode_header(s)
-    result = ""
-    for part, encoding in decoded_parts:
-        if isinstance(part, bytes):
-            try:
-                result += part.decode(encoding or 'utf-8', errors='ignore')
-            except LookupError:
-                result += part.decode('utf-8', errors='ignore')
-        else:
-            result += part
-    return result
-
-def scan_imap_inbox(email_addr, password, server_host='imap.gmail.com', port=993, limit=5):
-    """
-    Connects to IMAP server securely, fetches the last `limit` emails,
-    and returns their raw text and metadata to be processed by the AI model.
-    """
-    try:
-        mail = imaplib.IMAP4_SSL(server_host, int(port))
-        mail.login(email_addr, password)
-        mail.select("inbox")
-        
-        status, messages = mail.search(None, 'ALL')
-        if status != 'OK':
-            return {'error': 'Failed to search inbox.'}
-            
-        email_ids = messages[0].split()
-        latest_ids = email_ids[-limit:]
-        
-        fetched_emails = []
-        for e_id in reversed(latest_ids):
-            res, msg_data = mail.fetch(e_id, '(RFC822)')
-            if res == 'OK':
-                for response_part in msg_data:
-                    if isinstance(response_part, tuple):
-                        raw_email = response_part[1]
-                        try:
-                            decoded = raw_email.decode('utf-8', errors='ignore')
-                            fetched_emails.append(decoded)
-                        except Exception:
-                            fetched_emails.append(raw_email.decode('latin1', errors='ignore'))
-                            
-        mail.logout()
-        return {'status': 'success', 'emails': fetched_emails}
-    except imaplib.IMAP4.error as e:
-        return {'error': f'Authentication Failed. (Did you use an App Password?): {str(e)}'}
-    except Exception as e:
-        return {'error': f'IMAP Error: {str(e)}'}
