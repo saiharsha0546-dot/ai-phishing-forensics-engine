@@ -183,10 +183,6 @@ body.sidebar-collapsed .main { margin-left: 0; }
 .empty h4 { color: var(--text); margin: 0 0 4px; font-size: 15px; }
 .empty p { margin: 0; }
 
-#threatMap { height: 320px; border-radius: 0 0 var(--radius) var(--radius); z-index: 0; }
-.leaflet-container img { max-width: none !important; }
-.map-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(16,24,40,.25); }
-.map-dot.high { background: var(--danger); } .map-dot.warn { background: #f79009; } .map-dot.safe { background: #17b26a; }
 
 /* ---------- Result panels ---------- */
 .verdict { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px; border-bottom: 1px solid var(--border); }
